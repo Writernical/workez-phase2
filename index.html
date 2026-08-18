@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WorkEZ — Phase 2 Design Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   WORKEZ DESIGN TOKENS
+   Colours extracted from the live Figma exports (Home page.pdf,
+   Enterprise.pdf, Blog home.pdf, Meeting.pdf, Location subpage.pdf).
+   Items marked CONFIRM are inferred — dev to replace with the exact
+   value from the production stylesheet.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --ink:#1F1F1F;          /* primary text, dark bands, footer      */
+  --ink-2:#161616;        /* deepest black, hero overlays          */
+  --paper:#FFFFFF;
+  --surface:#F5F7FA;      /* alternating section background        */
+  --surface-2:#F2F3F7;
+  --accent:#FF4600;       /* brand orange — CTAs, active states     */
+  --accent-hover:#E63E00; /* CONFIRM                                */
+  --accent-soft:rgba(255,70,0,.08);
+  --cream:#F9F4E4;        /* editorial tag / blog category chip     */
+  --line:#DFDFDF;
+  --line-soft:#ECEEF2;
+  --muted:#6E6E6E;
+  --muted-2:#A5A5A5;
+  --ok:#1E8E5A;
+  --warn:#B0822C;
+
+  --r-card:16px;          /* CONFIRM */
+  --r-sm:10px;
+  --r-pill:999px;
+  --shadow-sm:0 1px 2px rgba(31,31,31,.04),0 4px 14px rgba(31,31,31,.05);
+  --shadow-md:0 8px 30px rgba(31,31,31,.09);
+  --container:1200px;
+  --gutter:24px;
+  --sec-y:96px;
+
+  --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; /* CONFIRM */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--ink);background:#E8EAEE;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* ── MOCKUP CHROME (not part of the build) ───────────────────── */
+.pack-bar{position:sticky;top:0;z-index:999;background:var(--ink);color:#fff;border-bottom:2px solid var(--accent)}
+.pack-bar-in{max-width:1560px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.pack-logo{font-weight:800;font-size:14px;letter-spacing:-.2px;white-space:nowrap}
+.pack-logo span{color:var(--accent)}
+.pack-nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.pack-nav button{color:#B9BCC2;font-size:11.5px;font-weight:600;padding:7px 11px;border-radius:8px;letter-spacing:.1px;transition:.15s;white-space:nowrap}
+.pack-nav button:hover{background:rgba(255,255,255,.08);color:#fff}
+.pack-nav button.on{background:var(--accent);color:#fff}
+.pack-meta{font-size:10.5px;color:#8A8E96;white-space:nowrap}
+
+.viewport{max-width:1560px;margin:0 auto;padding:22px 20px 70px}
+.view{display:none}
+.view.on{display:block}
+
+.slab{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 10px 40px rgba(31,31,31,.13);margin-bottom:22px}
+.slab-hd{background:#242428;color:#fff;padding:13px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.slab-hd h2{font-size:14px;font-weight:700;letter-spacing:-.1px}
+.slab-url{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#FFA477;background:rgba(255,70,0,.14);padding:3px 9px;border-radius:6px}
+.slab-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:3px 9px;border-radius:5px;background:rgba(255,255,255,.12);color:#D6D8DC}
+.slab-tag.new{background:rgba(30,142,90,.22);color:#5FD79E}
+.slab-tag.edit{background:rgba(176,130,44,.25);color:#F0C267}
+.slab-body{padding:0}
+
+/* annotation callouts for the developer */
+.note{background:#FFF8F4;border-left:3px solid var(--accent);padding:12px 16px;font-size:12.5px;color:#4A3E38;line-height:1.65}
+.note b{color:var(--ink)}
+.note code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:rgba(255,70,0,.1);padding:1px 5px;border-radius:4px;color:#B23200}
+.note-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0;border-top:1px solid var(--line-soft)}
+.note-row .note{border-left:none;border-right:1px solid var(--line-soft);border-radius:0}
+
+.pin{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;margin-right:7px;vertical-align:1px}
+.pin.ghost{background:var(--ink)}
+
+/* ── WORKEZ SITE COMPONENTS ──────────────────────────────────── */
+.wz{background:#fff;font-size:16px}
+.wrap{max-width:var(--container);margin:0 auto;padding:0 var(--gutter)}
+
+.wz-nav{display:flex;align-items:center;gap:32px;padding:18px var(--gutter);max-width:var(--container);margin:0 auto}
+.wz-brand{font-weight:800;font-size:21px;letter-spacing:-.6px}
+.wz-brand i{color:var(--accent);font-style:normal}
+.wz-links{display:flex;gap:26px;font-size:13.5px;font-weight:600;color:var(--ink);flex:1;text-transform:uppercase;letter-spacing:.4px}
+.wz-links span{cursor:default;opacity:.85}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:13px 26px;border-radius:var(--r-pill);transition:.18s;line-height:1;white-space:nowrap}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:hover{background:var(--accent-hover)}
+.btn-d{background:var(--ink);color:#fff}
+.btn-o{border:1.5px solid var(--ink);color:var(--ink)}
+.btn-o:hover{background:var(--ink);color:#fff}
+.btn-lt{border:1.5px solid rgba(255,255,255,.4);color:#fff}
+.btn-sm{font-size:13px;padding:10px 20px}
+
+.crumb{font-size:12.5px;color:var(--muted);padding:16px var(--gutter);max-width:var(--container);margin:0 auto}
+.crumb a{color:var(--muted)}
+.crumb b{color:var(--ink);font-weight:600}
+
+.sec{padding:var(--sec-y) 0}
+.sec.tight{padding:64px 0}
+.sec.dark{background:var(--ink);color:#fff}
+.sec.soft{background:var(--surface)}
+.eyebrow{font-size:11.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+h1.big{font-size:clamp(34px,4.4vw,56px);font-weight:800;line-height:1.08;letter-spacing:-1.6px}
+h2.sec-h{font-size:clamp(27px,3vw,40px);font-weight:800;line-height:1.15;letter-spacing:-1.1px}
+h3.card-h{font-size:20px;font-weight:700;line-height:1.3;letter-spacing:-.4px}
+.lede{font-size:17px;color:var(--muted);max-width:70ch;margin-top:16px;line-height:1.7}
+.sec.dark .lede{color:#B6B9BF}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:44px;flex-wrap:wrap}
+
+.grid{display:grid;gap:26px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+.card{background:#fff;border:1px solid var(--line-soft);border-radius:var(--r-card);overflow:hidden;transition:.2s}
+.card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.ph{background:linear-gradient(135deg,#E9EDF2,#DCE2EA);position:relative;display:flex;align-items:center;justify-content:center;color:#9AA3AE;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.ph[data-spec=""]::after,.ph:not([data-spec])::after{display:none}
+.ph::after{content:attr(data-spec);position:absolute;bottom:8px;left:8px;background:rgba(31,31,31,.72);color:#fff;font-size:9.5px;font-weight:600;letter-spacing:.3px;padding:3px 7px;border-radius:5px;text-transform:none}
+.ph.dk{background:linear-gradient(135deg,#2A2A2E,#3A3A40);color:#7E848C}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:var(--r-pill);background:var(--surface);color:var(--muted);letter-spacing:.2px}
+.chip.acc{background:var(--accent-soft);color:#C43700}
+.chip.cream{background:var(--cream);color:#7A6420}
+.chip.dark{background:rgba(255,255,255,.1);color:#E4E6EA}
+
+.metric{display:flex;align-items:center;gap:14px}
+.metric .mi{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;font-size:19px;flex:none}
+.metric .mv{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.1}
+.metric .ml{font-size:12.5px;color:var(--muted);line-height:1.35}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;font-weight:700;margin-bottom:7px;color:var(--ink)}
+.field label em{color:var(--accent);font-style:normal}
+.inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:13px 15px;font-size:14px;font-family:inherit;color:var(--muted-2);background:#fff}
+.inp:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.seg{display:flex;gap:9px;flex-wrap:wrap}
+.seg span{border:1px solid var(--line);border-radius:var(--r-pill);padding:9px 17px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg span.on{border-color:var(--accent);background:var(--accent-soft);color:#C43700}
+.consent{display:flex;gap:9px;font-size:11.5px;color:var(--muted);line-height:1.55;margin:6px 0 16px}
+.consent i{width:16px;height:16px;border:1.5px solid var(--line);border-radius:4px;flex:none;margin-top:2px}
+
+.wz-foot{background:var(--ink);color:#fff;padding:64px 0 26px}
+.wz-foot h4{font-size:13px;font-weight:800;letter-spacing:.6px;margin-bottom:16px}
+.wz-foot li{list-style:none;font-size:13.5px;color:#A9ADB4;margin-bottom:10px}
+.wz-foot .fnote{font-size:13px;color:#A9ADB4;line-height:1.7}
+.wz-foot .fbot{border-top:1px solid rgba(255,255,255,.12);margin-top:40px;padding-top:20px;font-size:12px;color:#8C9098;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+.sample{background:repeating-linear-gradient(45deg,#FFF3E8,#FFF3E8 12px,#FFEADB 12px,#FFEADB 24px);border:1px dashed var(--accent);border-radius:10px;padding:11px 16px;font-size:12px;font-weight:700;color:#B23200;margin:18px 0;display:flex;gap:9px;align-items:center}
+
+/* ── CMS FIELD MARKERS ── */
+.cms{position:relative;outline:1.5px dashed rgba(255,70,0,.55);outline-offset:3px;border-radius:3px}
+.cms::before{content:attr(data-f);position:absolute;top:-9px;left:0;transform:translateY(-100%);background:var(--accent);color:#fff;font-size:9px;font-weight:800;letter-spacing:.3px;padding:2px 6px;border-radius:4px;font-family:ui-monospace,Menlo,monospace;white-space:nowrap;z-index:3;pointer-events:none}
+.cms-r::before{left:auto;right:0}
+.cms.card::before,.cms-i::before{top:0;left:0;transform:none;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.cms-in{outline-color:rgba(30,142,90,.6)}
+.cms-in::before{background:var(--ok)}
+.legend{display:flex;gap:22px;flex-wrap:wrap;align-items:center;font-size:12.5px;padding:14px 20px;background:#FFFAF7;border-bottom:1px solid var(--line-soft)}
+.legend b{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.legend i{display:inline-block;width:26px;height:13px;border-radius:3px;vertical-align:-2px;margin-right:6px;font-style:normal}
+.ftable{width:100%;border-collapse:collapse;font-size:13px}
+.ftable th{background:var(--ink);color:#fff;text-align:left;padding:11px 14px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;position:sticky;top:0}
+.ftable td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.ftable code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--accent-soft);color:#B23200;padding:1px 5px;border-radius:4px}
+.ftable tr:nth-child(even) td{background:#FBFCFD}
+@media(max-width:1000px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}:root{--sec-y:56px}.wz-links{display:none}}
+</style>
+</head>
+<body>
+
+<div class="pack-bar">
+  <div class="pack-bar-in">
+    <div class="pack-logo">Work<span>EZ</span> · Phase 2 Design Pack</div>
+    <nav class="pack-nav" id="packNav"></nav>
+    <div class="pack-meta">v1 · Jul 2026 · for development handoff</div>
+  </div>
+</div>
+
+<div class="viewport" id="vp">
+<!-- ══════════════ VIEW: DESIGN TOKENS ══════════════ -->
+<section class="view on" id="v-tokens">
+  <div class="slab">
+    <div class="slab-hd"><h2>Design tokens</h2><span class="slab-tag">Reference</span></div>
+    <div class="note"><b>Where these came from.</b> Every colour below was sampled directly from your existing Figma exports — <code>Home page.pdf</code>, <code>Enterprise.pdf</code>, <code>Blog home.pdf</code>, <code>Meeting.pdf</code>, <code>Location subpage.pdf</code>. The same five values appear on every screen, so they are the real WorkEZ system, not a guess. Two tokens are marked <b>CONFIRM</b> — the type family and the card radius — because a flattened PDF can't carry them. Dev should replace those two with the live values and everything else in this pack will match production exactly.</div>
+    <div style="padding:28px">
+      <div class="grid g4" style="gap:14px">
+        <div class="card" style="padding:0;overflow:hidden"><div style="height:78px;background:#1F1F1F"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Ink</div><div style="font-size:12px;color:var(--muted)">#1F1F1F · <code>--ink</code></div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Headings, dark bands, footer</div></div></div>
+        <div class="card"><div style="height:78px;background:#FF4600"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Accent</div><div style="font-size:12px;color:var(--muted)">#FF4600 · <code>--accent</code></div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Primary CTA, active filter, eyebrow</div></div></div>
+        <div class="card"><div style="height:78px;background:#F5F7FA;border-bottom:1px solid var(--line-soft)"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Surface</div><div style="font-size:12px;color:var(--muted)">#F5F7FA · <code>--surface</code></div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Alternating section background</div></div></div>
+        <div class="card"><div style="height:78px;background:#F9F4E4;border-bottom:1px solid var(--line-soft)"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Cream</div><div style="font-size:12px;color:var(--muted)">#F9F4E4 · <code>--cream</code></div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Editorial / category chips</div></div></div>
+        <div class="card"><div style="height:78px;background:#FFFFFF;border-bottom:1px solid var(--line-soft)"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Paper</div><div style="font-size:12px;color:var(--muted)">#FFFFFF</div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Default page + card background</div></div></div>
+        <div class="card"><div style="height:78px;background:#DFDFDF"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Line</div><div style="font-size:12px;color:var(--muted)">#DFDFDF · <code>--line</code></div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Input borders, dividers</div></div></div>
+        <div class="card"><div style="height:78px;background:#6E6E6E"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Muted</div><div style="font-size:12px;color:var(--muted)">#6E6E6E · <code>--muted</code></div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Body copy, secondary text</div></div></div>
+        <div class="card"><div style="height:78px;background:#A5A5A5"></div><div style="padding:12px 14px"><div style="font-weight:800;font-size:13px">Muted 2</div><div style="font-size:12px;color:var(--muted)">#A5A5A5</div><div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">Placeholders, captions</div></div></div>
+      </div>
+
+      <h3 class="card-h" style="margin:38px 0 16px">Type scale</h3>
+      <div style="border:1px solid var(--line-soft);border-radius:12px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--line-soft)"><div style="padding:14px 18px;background:var(--surface);font-size:12px;font-weight:700">H1 · page title</div><div style="padding:12px 18px"><span style="font-size:44px;font-weight:800;letter-spacing:-1.6px;line-height:1.08">Case Studies</span><div style="font-size:11.5px;color:var(--muted-2)">clamp(34px, 4.4vw, 56px) / 800 / -1.6px / 1.08</div></div></div>
+        <div style="display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--line-soft)"><div style="padding:14px 18px;background:var(--surface);font-size:12px;font-weight:700">H2 · section</div><div style="padding:12px 18px"><span style="font-size:34px;font-weight:800;letter-spacing:-1.1px">Bridging gaps with solutions</span><div style="font-size:11.5px;color:var(--muted-2)">clamp(27px, 3vw, 40px) / 800 / -1.1px / 1.15</div></div></div>
+        <div style="display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--line-soft)"><div style="padding:14px 18px;background:var(--surface);font-size:12px;font-weight:700">H3 · card title</div><div style="padding:12px 18px"><span style="font-size:20px;font-weight:700;letter-spacing:-.4px">Standing up a GCC in 47 days</span><div style="font-size:11.5px;color:var(--muted-2)">20px / 700 / -0.4px / 1.3</div></div></div>
+        <div style="display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--line-soft)"><div style="padding:14px 18px;background:var(--surface);font-size:12px;font-weight:700">Lede</div><div style="padding:12px 18px"><span style="font-size:17px;color:var(--muted)">Intro paragraph under a page title, capped at 70 characters per line.</span><div style="font-size:11.5px;color:var(--muted-2)">17px / 400 / 1.7 / max-width 70ch</div></div></div>
+        <div style="display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--line-soft)"><div style="padding:14px 18px;background:var(--surface);font-size:12px;font-weight:700">Body</div><div style="padding:12px 18px"><span style="font-size:16px">Default running text across all Phase 2 pages.</span><div style="font-size:11.5px;color:var(--muted-2)">16px / 400 / 1.6</div></div></div>
+        <div style="display:grid;grid-template-columns:170px 1fr"><div style="padding:14px 18px;background:var(--surface);font-size:12px;font-weight:700">Eyebrow</div><div style="padding:12px 18px"><span class="eyebrow" style="margin:0">In conversation with</span><div style="font-size:11.5px;color:var(--muted-2)">11.5px / 800 / 1.6px tracking / uppercase / accent</div></div></div>
+      </div>
+
+      <h3 class="card-h" style="margin:38px 0 16px">Buttons &amp; chips</h3>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+        <span class="btn btn-p">Book a Tour</span>
+        <span class="btn btn-d">Download Brochure</span>
+        <span class="btn btn-o">Read case study</span>
+        <span class="btn btn-p btn-sm">Small primary</span>
+        <span class="chip">Chennai</span><span class="chip acc">GCC</span><span class="chip cream">Enterprise</span>
+      </div>
+      <div class="note" style="border-radius:10px"><b>Radius rule.</b> CTAs use a full pill (<code>999px</code>); cards, images and inputs use <code>16px</code> / <code>10px</code>. If production uses a different card radius, change <code>--r-card</code> once at the top of this file and every mockup updates.</div>
+
+      <h3 class="card-h" style="margin:38px 0 16px">Layout</h3>
+      <div class="grid g3" style="gap:14px">
+        <div class="card" style="padding:18px"><div style="font-weight:800;font-size:13px;margin-bottom:6px">Container</div><div style="font-size:13px;color:var(--muted)">Max <b>1200px</b>, side gutter <b>24px</b>. Full-bleed dark bands break out, content stays in the container.</div></div>
+        <div class="card" style="padding:18px"><div style="font-weight:800;font-size:13px;margin-bottom:6px">Section rhythm</div><div style="font-size:13px;color:var(--muted)"><b>96px</b> vertical padding desktop, <b>56px</b> below 760px. Backgrounds alternate white → <code>#F5F7FA</code>.</div></div>
+        <div class="card" style="padding:18px"><div style="font-weight:800;font-size:13px;margin-bottom:6px">Breakpoints</div><div style="font-size:13px;color:var(--muted)"><b>1000px</b> → 4-col becomes 2-col. <b>760px</b> → everything single column, nav collapses to hamburger.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: CASE STUDIES INDEX ══════════════ -->
+<section class="view" id="v-cs-index">
+  <div class="slab">
+    <div class="slab-hd"><h2>Case Studies — listing page</h2><span class="slab-url">/case-studies/</span><span class="slab-tag new">New page</span><span class="slab-tag">CMS collection</span></div>
+    <div class="note"><b><span class="pin">1</span>What the developer builds here.</b> A CMS collection called <code>caseStudy</code> plus one listing template. Marketing adds a new story by filling the collection fields — no deploy needed. The listing reads every published entry, sorts by <code>publishedAt</code> desc, and renders the card grid. Filters are client-side on the loaded set until you pass ~30 studies, then move to server-side query params (<code>?city=chennai&amp;industry=gcc</code>) so each filter combination is its own crawlable URL. Full field list is in the build spec.</div>
+    <div class="slab-body">
+      <div class="wz">
+        <div data-wzhead></div>
+        <div class="crumb"><a>Home</a> › <b>Case Studies</b></div>
+
+        <!-- HERO -->
+        <div class="sec dark tight" style="padding:70px 0 64px">
+          <div class="wrap">
+            <div class="eyebrow">Customer Stories</div>
+            <h1 class="big" style="max-width:17ch">How growing teams scale with WorkEZ</h1>
+            <p class="lede">Real moves into real floors — GCC launches, multi-city rollouts and team expansions across Chennai, Bengaluru, Coimbatore and Kochi. Every story includes the numbers, the timeline and the centre it happened in.</p>
+            <div style="display:flex;gap:44px;margin-top:38px;flex-wrap:wrap">
+              <div><div style="font-size:34px;font-weight:800;letter-spacing:-1.2px;color:var(--accent)">100+</div><div style="font-size:13px;color:#B6B9BF">Client teams hosted</div></div>
+              <div><div style="font-size:34px;font-weight:800;letter-spacing:-1.2px;color:var(--accent)">20+</div><div style="font-size:13px;color:#B6B9BF">Centres across 4 cities</div></div>
+              <div><div style="font-size:34px;font-weight:800;letter-spacing:-1.2px;color:var(--accent)">1M+</div><div style="font-size:13px;color:#B6B9BF">Sq. ft. under management</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div style="border-bottom:1px solid var(--line-soft);background:#fff" title="Sticky on the live page (top:0); shown static here so it does not collide with the mockup navigator.">
+          <div class="wrap" style="display:flex;gap:12px;align-items:center;padding-top:18px;padding-bottom:18px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2)">Filter</span>
+            <select class="inp" style="width:auto;padding:9px 34px 9px 14px;font-size:13px;color:var(--ink);font-weight:600"><option>All cities</option><option>Chennai</option><option>Bengaluru</option><option>Coimbatore</option><option>Kochi</option></select>
+            <select class="inp" style="width:auto;padding:9px 34px 9px 14px;font-size:13px;color:var(--ink);font-weight:600"><option>All industries</option><option>GCC / Global Capability Centre</option><option>IT &amp; SaaS</option><option>BFSI &amp; Fintech</option><option>Healthcare &amp; Life Sciences</option><option>Engineering &amp; Manufacturing</option><option>Consulting</option><option>D2C &amp; E-commerce</option></select>
+            <select class="inp" style="width:auto;padding:9px 34px 9px 14px;font-size:13px;color:var(--ink);font-weight:600"><option>All team sizes</option><option>Under 50 seats</option><option>50–150 seats</option><option>150–500 seats</option><option>500+ seats</option></select>
+            <select class="inp" style="width:auto;padding:9px 34px 9px 14px;font-size:13px;color:var(--ink);font-weight:600"><option>All solutions</option><option>Enterprise Workspace</option><option>Private Cabins</option><option>Meeting &amp; Event Space</option></select>
+            <span style="flex:1"></span>
+            <span style="font-size:13px;color:var(--muted)">Showing <b style="color:var(--ink)">6</b> of 6 stories</span>
+          </div>
+        </div>
+
+        <!-- FEATURED -->
+        <div class="sec tight">
+          <div class="wrap">
+            <div class="sample">⚠︎ SAMPLE CONTENT — every client name, quote and figure on this page is placeholder. Replace with real, written-consent-approved stories before publishing. See “Client sign-off” in the build spec.</div>
+            <div class="eyebrow" style="margin-bottom:18px">Featured story</div>
+            <div class="card" style="display:grid;grid-template-columns:1.05fr 1fr;overflow:hidden">
+              <div class="ph" data-spec="1040×760 · WebP · &lt;140KB · alt: Corveta Health team at WorkEZ Willow Square, Guindy" style="min-height:430px">Centre photo — client floor</div>
+              <div style="padding:44px 42px;display:flex;flex-direction:column;justify-content:center">
+                <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap"><span class="chip acc">GCC Setup</span><span class="chip">Healthcare Analytics</span><span class="chip">Chennai</span></div>
+                <h2 class="sec-h" style="font-size:31px">220 seats live in 47 days — how Corveta Health opened its first India GCC</h2>
+                <p style="color:var(--muted);margin-top:16px;font-size:15.5px">A US healthcare-analytics firm needed an interview-ready floor in Chennai before its hiring wave began. A conventional lease would have taken seven months. WorkEZ Willow Square handed over a fitted, badge-controlled floor in under seven weeks.</p>
+                <div class="grid g3" style="gap:16px;margin:26px 0 28px">
+                  <div><div style="font-size:25px;font-weight:800;letter-spacing:-.8px;color:var(--accent)">47 days</div><div style="font-size:12px;color:var(--muted)">Signature to go-live</div></div>
+                  <div><div style="font-size:25px;font-weight:800;letter-spacing:-.8px;color:var(--accent)">220</div><div style="font-size:12px;color:var(--muted)">Seats at handover</div></div>
+                  <div><div style="font-size:25px;font-weight:800;letter-spacing:-.8px;color:var(--accent)">38%</div><div style="font-size:12px;color:var(--muted)">Lower cost vs. lease</div></div>
+                </div>
+                <a class="btn btn-p" style="align-self:flex-start">Read the full story →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRID -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <div class="sec-head" style="margin-bottom:34px"><h2 class="sec-h">All case studies</h2><span style="font-size:13.5px;color:var(--muted)">Sorted by most recent</span></div>
+            <div class="grid g3">
+              <a class="card"><div class="ph" data-spec="760×500 · WebP · &lt;90KB" style="height:210px">Client floor</div><div style="padding:24px"><div style="display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap"><span class="chip acc">Semiconductor</span><span class="chip">Coimbatore</span></div><h3 class="card-h">Nimbus Logic proved a tier‑2 design centre works</h3><p style="font-size:14px;color:var(--muted);margin-top:10px">Chip-design services firm moved 140 engineers to Coimbatore and cut per-seat cost by a third without losing hiring velocity.</p><div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap"><span class="chip cream">140 seats</span><span class="chip cream">−33% per seat</span></div><div style="margin-top:20px;font-size:13.5px;font-weight:700;color:var(--accent)">Read case study →</div></div></a>
+              <a class="card"><div class="ph" data-spec="760×500 · WebP · &lt;90KB" style="height:210px">Client floor</div><div style="padding:24px"><div style="display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap"><span class="chip acc">Fintech</span><span class="chip">Chennai</span></div><h3 class="card-h">Trellis Pay passed its first RBI audit from a flex floor</h3><p style="font-size:14px;color:var(--muted);margin-top:10px">Zoned access, camera coverage and a documented visitor trail let a payments company clear compliance inside a managed office.</p><div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap"><span class="chip cream">90 seats</span><span class="chip cream">Audit cleared</span></div><div style="margin-top:20px;font-size:13.5px;font-weight:700;color:var(--accent)">Read case study →</div></div></a>
+              <a class="card"><div class="ph" data-spec="760×500 · WebP · &lt;90KB" style="height:210px">Client floor</div><div style="padding:24px"><div style="display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap"><span class="chip acc">Consulting</span><span class="chip">Bengaluru</span></div><h3 class="card-h">Aster &amp; Vale opened three cities on one agreement</h3><p style="font-size:14px;color:var(--muted);margin-top:10px">A consulting firm standardised its Chennai, Bengaluru and Coimbatore offices under a single contract and one point of contact.</p><div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap"><span class="chip cream">110 seats</span><span class="chip cream">3 cities</span></div><div style="margin-top:20px;font-size:13.5px;font-weight:700;color:var(--accent)">Read case study →</div></div></a>
+              <a class="card"><div class="ph" data-spec="760×500 · WebP · &lt;90KB" style="height:210px">Client floor</div><div style="padding:24px"><div style="display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap"><span class="chip acc">Engineering</span><span class="chip">Chennai</span></div><h3 class="card-h">Halyard Marine put its design team 12 minutes from the airport</h3><p style="font-size:14px;color:var(--muted);margin-top:10px">A naval-architecture consultancy with weekly international travel chose Pallavaram to cut door-to-gate time for its leads.</p><div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap"><span class="chip cream">60 seats</span><span class="chip cream">Private cabins</span></div><div style="margin-top:20px;font-size:13.5px;font-weight:700;color:var(--accent)">Read case study →</div></div></a>
+              <a class="card"><div class="ph" data-spec="760×500 · WebP · &lt;90KB" style="height:210px">Client floor</div><div style="padding:24px"><div style="display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap"><span class="chip acc">D2C</span><span class="chip">Chennai</span></div><h3 class="card-h">Foxglove Studio runs launches out of its own office</h3><p style="font-size:14px;color:var(--muted);margin-top:10px">A beauty brand paired a 35-seat cabin in Alwarpet with on-demand event space, replacing four hotel bookings a year.</p><div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap"><span class="chip cream">35 seats</span><span class="chip cream">Event space</span></div><div style="margin-top:20px;font-size:13.5px;font-weight:700;color:var(--accent)">Read case study →</div></div></a>
+              <a class="card"><div class="ph" data-spec="760×500 · WebP · &lt;90KB" style="height:210px">Client floor</div><div style="padding:24px"><div style="display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap"><span class="chip acc">SaaS</span><span class="chip">Kochi</span></div><h3 class="card-h">Meridian Kite doubled headcount without changing floors</h3><p style="font-size:14px;color:var(--muted);margin-top:10px">A logistics SaaS company grew from 45 to 95 people inside the same centre by pre-booking adjacent inventory.</p><div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap"><span class="chip cream">95 seats</span><span class="chip cream">Zero relocation</span></div><div style="margin-top:20px;font-size:13.5px;font-weight:700;color:var(--accent)">Read case study →</div></div></a>
+            </div>
+            <div style="text-align:center;margin-top:44px"><span class="btn btn-o">Load more stories</span></div>
+          </div>
+        </div>
+
+        <!-- CTA BAND -->
+        <div style="background:var(--accent);color:#fff;padding:64px 0">
+          <div class="wrap" style="display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap">
+            <div><h2 class="sec-h" style="font-size:32px">Your team could be the next story.</h2><p style="opacity:.92;margin-top:10px;font-size:16px">Tell us the headcount and the city. We'll show you what's available this month.</p></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn" style="background:#fff;color:var(--accent)">Book a Tour</a><a class="btn btn-lt">Talk to a workspace expert</a></div>
+          </div>
+        </div>
+
+        <div data-wzfoot></div>
+      </div>
+    </div>
+    <div class="note-row">
+      <div class="note"><b><span class="pin">2</span>Filters &amp; URLs.</b> Each filter writes a query param and updates <code>&lt;title&gt;</code> + H1 (“GCC case studies in Chennai”). Add <code>rel="canonical"</code> back to <code>/case-studies/</code> for any combination with fewer than 3 results so thin filter pages don't get indexed.</div>
+      <div class="note"><b><span class="pin">3</span>Card image discipline.</b> One 760×500 WebP per study, lazy-loaded below the fold, alt text <code>[Client] team at WorkEZ [Centre] — [Area], [City]</code>. Never ship a card without an image — a broken grid is the fastest way to lose trust on a proof page.</div>
+      <div class="note"><b><span class="pin">4</span>Where it links from.</b> Add “Case Studies” to the Others/Resources nav dropdown, to the homepage case-study strip (which currently shows blog cards), and to every location + industry page as “Teams like yours at this centre”.</div>
+      <div class="note"><b><span class="pin">5</span>Schema.</b> <code>CollectionPage</code> + <code>ItemList</code> on this page; <code>BreadcrumbList</code> on both. Detail pages carry <code>Article</code> + <code>Review</code> (see next view). JSON-LD blocks are written out in the build spec.</div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: CASE STUDY DETAIL ══════════════ -->
+<section class="view" id="v-cs-detail">
+  <div class="slab">
+    <div class="slab-hd"><h2>Case Study — detail template</h2><span class="slab-url">/case-studies/[slug]/</span><span class="slab-tag new">New template</span><span class="slab-tag">Modelled on the Shipturtle reference</span></div>
+    <div class="note"><b><span class="pin">1</span>Structural mapping to your reference.</b> This is the Shipturtle <code>/customers/bearsclub</code> skeleton rebuilt in WorkEZ's own system — same information architecture, WorkEZ's palette, type and voice. Kept: the eyebrow + H1 + intro, the boxed <b>Key Metrics</b>, the sticky right rail with <b>“In conversation with”</b> and pull-quotes, the <b>Challenge / Solution</b> pairs, the full-width quote card, the <b>Impact</b> bullet list with a founder photo, and the closing <b>Results</b> block. Changed for WorkEZ: metrics are workspace metrics (seats, days to handover, cost delta), a <b>Centre facts</b> strip replaces the product-feature box, and a lead form replaces the “Visit website” footer since this page has to convert, not just credential.</div>
+    <div class="slab-body">
+      <div class="wz">
+        <div data-wzhead></div>
+        <div class="crumb"><a>Home</a> › <a>Case Studies</a> › <b>Corveta Health — Chennai GCC</b></div>
+
+        <div class="wrap" style="display:grid;grid-template-columns:1fr 340px;gap:64px;padding-top:26px;padding-bottom:80px;align-items:start">
+
+          <!-- ── MAIN COLUMN ── -->
+          <div>
+            <div class="sample">⚠︎ SAMPLE STORY — “Corveta Health” and every quote, name and figure below are invented to demonstrate the template. Do not publish until a real client has signed the release form.</div>
+
+            <div style="display:flex;align-items:center;gap:11px;margin-bottom:20px">
+              <span style="width:34px;height:34px;border-radius:9px;background:var(--accent-soft);display:grid;place-items:center;font-size:16px">📄</span>
+              <span style="font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.3px">Case Study</span>
+            </div>
+
+            <h1 class="big" style="font-size:clamp(30px,3.6vw,46px)">220 seats live in 47 days: how Corveta Health opened its first India GCC</h1>
+            <p class="lede" style="font-size:18px">Corveta Health had approval to build a 200-person analytics team in Chennai and a hiring plan that started in eight weeks. A conventional Grade-A lease would not have handed over a usable floor until the following year.</p>
+
+            <!-- KEY METRICS BOX -->
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);padding:30px 32px;margin:38px 0 44px">
+              <div style="font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted-2);margin-bottom:22px">Key Metrics</div>
+              <div style="display:flex;flex-direction:column;gap:20px">
+                <div class="metric"><span class="mi">⚡</span><div><div class="mv">47 days from signature to go-live</div></div></div>
+                <div class="metric"><span class="mi">🪑</span><div><div class="mv">220 seats at handover, 400 contracted</div></div></div>
+                <div class="metric"><span class="mi">📉</span><div><div class="mv">38% lower first-year cost than a direct lease</div></div></div>
+                <div class="metric"><span class="mi">🛡️</span><div><div class="mv">Parent-company security sign-off in one visit</div></div></div>
+              </div>
+            </div>
+
+            <!-- INTRO -->
+            <h2 style="font-size:13px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink);margin-bottom:16px">Intro</h2>
+            <p style="font-size:16.5px;color:#3D3D3D;margin-bottom:18px">Corveta Health builds claims-analytics software for US payers. In late 2025 the board approved an India capability centre — engineering, data operations and clinical review under one roof — with a mandate to have the first 80 people productive inside a quarter.</p>
+            <p style="font-size:16.5px;color:#3D3D3D">The India leadership team had the headcount plan and the budget. What they did not have was time. Chennai's Grade-A market runs on nine-year leases with six-to-nine month fit-out cycles, security deposits measured in crores, and a vendor list — landlord, contractor, IT, facilities, security, cafeteria, transport — that lands on one person's desk on day one.</p>
+
+            <div class="ph" data-spec="1200×620 · WebP · &lt;160KB · alt: Corveta Health floor at WorkEZ Willow Square, Guindy, Chennai" style="height:400px;border-radius:var(--r-card);margin:34px 0 12px">Full-width photo — client floor at the centre</div>
+            <p style="font-size:13.5px;color:var(--muted);margin-bottom:44px">Corveta Health's 220-seat floor at WorkEZ Willow Square, Guindy — handed over fitted, badged and network-ready.</p>
+
+            <!-- CHALLENGE / SOLUTION -->
+            <h2 style="font-size:13px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink);margin-bottom:28px">Bridging gaps with solutions</h2>
+
+            <div style="margin-bottom:36px"><h3 class="card-h" style="font-size:23px;margin-bottom:14px">Getting a floor before the lease cycle allowed</h3>
+              <p style="font-size:16px;margin-bottom:10px"><b>The challenge:</b> Offers were already out to the first engineering cohort. A signed lease in January would still have meant an empty shell until August.</p>
+              <p style="font-size:16px;color:#3D3D3D"><b>The solution:</b> WorkEZ held 220 fitted seats at Willow Square, Guindy and ran the client-specific work — branding, cabin layout, a dedicated server room and separate badge zones — in parallel with contracting. The floor was handed over 47 days after signature, three weeks before the first joiners.</p>
+            </div>
+
+            <div style="margin-bottom:36px"><h3 class="card-h" style="font-size:23px;margin-bottom:14px">One accountable partner instead of nine vendors</h3>
+              <p style="font-size:16px;margin-bottom:10px"><b>The challenge:</b> A two-person India setup team could not manage a landlord, a fit-out contractor, an ISP, a facilities agency, housekeeping, security, cafeteria and transport in their first quarter.</p>
+              <p style="font-size:16px;color:#3D3D3D"><b>The solution:</b> Everything above the desk stayed with WorkEZ — power and UPS backup, dual-ISP internet, IT support, housekeeping, pantry, security and visitor management — on a single monthly invoice with one named centre manager and a documented escalation path.</p>
+            </div>
+
+            <div style="margin-bottom:36px"><h3 class="card-h" style="font-size:23px;margin-bottom:14px">A floor that could pass a US security review</h3>
+              <p style="font-size:16px;margin-bottom:10px"><b>The challenge:</b> Handling US health data meant the parent company's infosec team had to approve the physical site — access control, camera retention, visitor logs, network segregation and a lockable records room.</p>
+              <p style="font-size:16px;color:#3D3D3D"><b>The solution:</b> WorkEZ delivered card-controlled entry at both the floor and zone level, CCTV with agreed retention, a digital visitor trail exportable on request, a physically separate rack room and a VLAN isolated from the rest of the building. The infosec audit closed in a single site visit.</p>
+            </div>
+
+            <div style="margin-bottom:36px"><h3 class="card-h" style="font-size:23px;margin-bottom:14px">Designed for Chennai hiring, not just Chennai rent</h3>
+              <p style="font-size:16px;margin-bottom:10px"><b>The challenge:</b> Corveta was competing for analytics talent against established GCCs. A candidate walking into a half-built floor was a lost offer.</p>
+              <p style="font-size:16px;color:#3D3D3D"><b>The solution:</b> Guindy sits on the metro line with the Anna Salai and OMR corridors both in reach, so commute was never the objection. The floor was interview-ready on day one — branded reception, finished meeting rooms, working cafeteria — and WorkEZ ran walk-in drives out of the 200-seater event space on three consecutive Saturdays.</p>
+            </div>
+
+            <div style="margin-bottom:44px"><h3 class="card-h" style="font-size:23px;margin-bottom:14px">Room to double without moving</h3>
+              <p style="font-size:16px;margin-bottom:10px"><b>The challenge:</b> The three-year plan reaches 400 people. Outgrowing the floor in year two would have meant a second relocation and a second security review.</p>
+              <p style="font-size:16px;color:#3D3D3D"><b>The solution:</b> Corveta contracted 220 seats live with first right on a further 180 on the adjacent floor, drawn down in blocks of 40 on 60 days' notice. Expansion is a schedule change, not a new project.</p>
+            </div>
+
+            <!-- BIG QUOTE -->
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);padding:36px 38px;margin:0 0 48px;background:var(--surface)">
+              <p style="font-size:19px;line-height:1.6;color:var(--ink);font-weight:500">“We were told a real office in Chennai takes nine months. We had 80 people working out of ours in seven weeks, and I never once had to chase a contractor. That is the whole reason we hit our hiring plan.”</p>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:26px">
+                <span class="ph" data-spec="" style="width:52px;height:52px;border-radius:50%;font-size:9px">👤</span>
+                <div><div style="font-weight:800;font-size:15px">Priya Raghunathan</div><div style="font-size:13px;color:var(--muted)">Head of India Operations, Corveta Health</div></div>
+              </div>
+            </div>
+
+            <!-- IMPACT -->
+            <h2 style="font-size:13px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink);margin-bottom:20px">Impact</h2>
+            <p style="font-size:16.5px;color:#3D3D3D;margin-bottom:22px">Ten months in, the Chennai centre is Corveta's second-largest engineering site.</p>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:20px;margin-bottom:48px">
+              <li><b style="font-size:16px">Hiring started two quarters early.</b><br><span style="font-size:15.5px;color:var(--muted)">The first cohort joined in February instead of August, pulling the product roadmap forward by roughly six months.</span></li>
+              <li><b style="font-size:16px">Zero capex on the office itself.</b><br><span style="font-size:15.5px;color:var(--muted)">No fit-out spend, no security deposit at lease scale. The India budget went to salaries and tooling.</span></li>
+              <li><b style="font-size:16px">One invoice, one escalation path.</b><br><span style="font-size:15.5px;color:var(--muted)">Facilities questions go to a named centre manager rather than eight vendor contacts, freeing the setup team for hiring and compliance.</span></li>
+              <li><b style="font-size:16px">Security cleared on the first visit.</b><br><span style="font-size:15.5px;color:var(--muted)">Access zoning, camera retention and network segregation were already in place, so the parent company's infosec review closed without a remediation list.</span></li>
+              <li><b style="font-size:16px">The next 180 seats are already reserved.</b><br><span style="font-size:15.5px;color:var(--muted)">Growth to 400 people happens on the same floor plate, under the same agreement, with no second relocation.</span></li>
+            </ul>
+
+            <!-- RESULTS -->
+            <h2 style="font-size:13px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink);margin-bottom:20px">The results</h2>
+            <p style="font-size:16.5px;color:#3D3D3D;margin-bottom:16px">Corveta Health did not set out to find a coworking space. It set out to open a capability centre on a timeline the Chennai lease market could not serve — and needed the office question to stop being a project so the team could get on with building one.</p>
+            <p style="font-size:16.5px;color:#3D3D3D;margin-bottom:16px">Choosing a managed floor converted a nine-month construction problem into a seven-week onboarding, removed eight vendor relationships from a two-person setup team, and left the expansion path pre-negotiated. The India leadership spent its first year on hiring and delivery rather than on switchgear and fire NOCs.</p>
+            <p style="font-size:16.5px;color:#3D3D3D">That is what a managed office is supposed to buy: not cheaper square feet, but the months you would otherwise spend getting to them.</p>
+
+            <!-- FOOT BAR -->
+            <div style="border-top:1px solid var(--line);margin-top:52px;padding-top:24px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+              <div style="display:flex;gap:26px;align-items:center;font-size:14px;font-weight:700"><span>📄 Case Study</span><a style="color:var(--accent)">📍 Visit WorkEZ Willow Square →</a></div>
+              <div style="font-size:13px;color:var(--muted);display:flex;gap:12px;align-items:center"><b style="color:var(--ink)">Share</b><span>in</span><span>𝕏</span><span>✉</span></div>
+            </div>
+          </div>
+
+          <!-- ── STICKY RIGHT RAIL ── -->
+          <aside style="position:sticky;top:24px;display:flex;flex-direction:column;gap:20px">
+            <div>
+              <div style="font-size:11.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted-2);margin-bottom:18px">In conversation with</div>
+              <div style="display:flex;gap:14px;align-items:center">
+                <span class="ph" data-spec="" style="width:58px;height:58px;border-radius:50%;font-size:9px">👤</span>
+                <div><div style="font-weight:800;font-size:16px;line-height:1.25">Priya Raghunathan</div><div style="font-size:13px;color:var(--muted)">Head of India Operations</div></div>
+              </div>
+              <div style="border-top:1px solid var(--line-soft);margin-top:20px;padding-top:16px;font-size:13px;color:var(--muted);display:flex;gap:12px;align-items:center"><b style="color:var(--ink)">Share</b><span>in</span><span>𝕏</span><span>✉</span></div>
+            </div>
+
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);padding:24px 22px">
+              <p style="font-size:15px;line-height:1.65;color:#3D3D3D">“The floor was interview-ready before our first candidate walked in. In a hiring market like Chennai, that is not a nice-to-have — it is the offer.”</p>
+              <div style="margin-top:18px"><div style="font-weight:800;font-size:14px">Priya Raghunathan</div><div style="font-size:12.5px;color:var(--muted)">Head of India Operations</div></div>
+            </div>
+
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);padding:24px 22px">
+              <div class="ph" data-spec="600×420 · WebP" style="height:150px;border-radius:10px;margin-bottom:16px">Client logo / team photo</div>
+              <p style="font-size:13.5px;color:var(--muted);line-height:1.65">Corveta Health builds claims-analytics software for US healthcare payers. Its Chennai centre houses engineering, data operations and clinical review.</p>
+            </div>
+
+            <!-- CENTRE FACTS — WorkEZ-specific addition -->
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+              <div style="background:var(--ink);color:#fff;padding:14px 20px;font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase">Centre facts</div>
+              <div style="padding:18px 20px;font-size:13.5px;display:flex;flex-direction:column;gap:11px">
+                <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--muted)">Centre</span><b>Willow Square</b></div>
+                <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--muted)">Location</span><b>Guindy, Chennai</b></div>
+                <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--muted)">Solution</span><b>Enterprise Workspace</b></div>
+                <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--muted)">Seats</span><b>220 live · 400 contracted</b></div>
+                <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--muted)">Industry</span><b>Healthcare analytics</b></div>
+                <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--muted)">Live since</span><b>Feb 2026</b></div>
+              </div>
+              <div style="padding:0 20px 20px"><a class="btn btn-p btn-sm" style="width:100%;justify-content:center">See this centre</a></div>
+            </div>
+
+            <div style="background:var(--surface);border-radius:var(--r-card);padding:24px 22px">
+              <div style="font-weight:800;font-size:16px;margin-bottom:8px">Planning something similar?</div>
+              <p style="font-size:13.5px;color:var(--muted);margin-bottom:16px">Tell us your headcount and target city. We'll send available floors this week.</p>
+              <a class="btn btn-p btn-sm" style="width:100%;justify-content:center">Talk to a workspace expert</a>
+            </div>
+          </aside>
+        </div>
+
+        <!-- RELATED -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <div class="sec-head" style="margin-bottom:30px"><h2 class="sec-h">More stories like this</h2><a style="font-size:14px;font-weight:700;color:var(--accent)">All case studies →</a></div>
+            <div class="grid g3">
+              <a class="card"><div class="ph" style="height:170px" data-spec="760×500">Client floor</div><div style="padding:22px"><span class="chip acc">GCC Setup</span><h3 class="card-h" style="font-size:18px;margin-top:11px">Aster &amp; Vale opened three cities on one agreement</h3></div></a>
+              <a class="card"><div class="ph" style="height:170px" data-spec="760×500">Client floor</div><div style="padding:22px"><span class="chip acc">Fintech</span><h3 class="card-h" style="font-size:18px;margin-top:11px">Trellis Pay passed its first RBI audit from a flex floor</h3></div></a>
+              <a class="card"><div class="ph" style="height:170px" data-spec="760×500">Client floor</div><div style="padding:22px"><span class="chip acc">Semiconductor</span><h3 class="card-h" style="font-size:18px;margin-top:11px">Nimbus Logic proved a tier‑2 design centre works</h3></div></a>
+            </div>
+          </div>
+        </div>
+
+        <div data-wzfoot></div>
+      </div>
+    </div>
+    <div class="note-row">
+      <div class="note"><b><span class="pin">2</span>Sticky rail behaviour.</b> <code>position:sticky; top:24px</code> on the aside, 340px fixed column. Below 1000px the rail unstacks and drops <i>below</i> the intro but <i>above</i> the Challenge/Solution blocks — the “in conversation with” attribution has to be seen before the claims, or the page reads as marketing copy.</div>
+      <div class="note"><b><span class="pin">3</span>Content model.</b> Challenge/Solution pairs are a <b>repeatable group</b> (title + challenge + solution), not five fixed fields — some stories will have three, some seven. Same for Key Metrics (icon + value, 3–5 items) and Impact bullets (lead + body).</div>
+      <div class="note"><b><span class="pin">4</span>Schema.</b> <code>Article</code> with <code>about</code> pointing at the <code>Organization</code>, plus a nested <code>Review</code> carrying the pull-quote and <code>author</code>. This is the block most likely to earn an AI-answer citation, because it makes the claim, the claimant and the outcome machine-readable in one place.</div>
+      <div class="note"><b><span class="pin">5</span>Client sign-off is a build requirement.</b> The CMS needs a <code>consentRef</code> field (link to the signed release) and the entry must not be publishable while it is empty. Named clients, quoted people and hard numbers all need written approval — a disputed case study is worse than no case study.</div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: INDUSTRY SOLUTIONS ══════════════ -->
+<section class="view" id="v-industries">
+  <div class="slab">
+    <div class="slab-hd"><h2>Industry Solutions — hub</h2><span class="slab-url">/industry-solutions/</span><span class="slab-tag new">New page</span><span class="slab-tag">+ 8 child templates</span></div>
+    <div class="note"><b><span class="pin">1</span>Why a hub, not a single page.</b> “Industry Solutions” as one long page ranks for nothing. Built as a hub with eight children (<code>/industry-solutions/gcc/</code>, <code>/industry-solutions/bfsi-fintech/</code> …) it becomes a proper cluster: the hub takes the head term, each child owns a real buying query, and every child links out to matching centres and case studies. This is the same collection pattern as case studies — one template, content managed by marketing, eight URLs.</div>
+    <div class="slab-body">
+      <div class="wz">
+        <div data-wzhead></div>
+        <div class="crumb"><a>Home</a> › <b>Industry Solutions</b></div>
+
+        <div class="sec dark tight" style="padding:70px 0 64px">
+          <div class="wrap" style="display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center">
+            <div>
+              <div class="eyebrow">Industry Solutions</div>
+              <h1 class="big">Managed offices built around how your industry actually works</h1>
+              <p class="lede">A payments company needs zoned access and an audit trail. A GCC needs to hire 200 people before the floor is finished. A design studio needs event space more than it needs desks. Same building, very different brief.</p>
+              <div style="display:flex;gap:12px;margin-top:32px;flex-wrap:wrap"><a class="btn btn-p">Find your industry</a><a class="btn btn-lt">Talk to a workspace expert</a></div>
+            </div>
+            <div class="ph dk" data-spec="900×700 · WebP · &lt;140KB" style="height:360px;border-radius:var(--r-card)">Hero image — enterprise floor</div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="wrap">
+            <div class="sec-head"><div><h2 class="sec-h">Pick the brief that sounds like yours</h2><p class="lede" style="margin-top:12px">Each page covers what teams in that sector ask for, which WorkEZ centres are set up for it, and the clients already there.</p></div></div>
+            <div class="grid g4">
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">🌐</div><h3 class="card-h">GCC &amp; Global Capability Centres</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Stand up an India centre before the lease market can hand you a floor. Parent-company security sign-off included.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">💻</div><h3 class="card-h">IT &amp; SaaS</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Elastic seat counts, dual-ISP redundancy and floors you can grow into without a relocation project.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">🏦</div><h3 class="card-h">BFSI &amp; Fintech</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Zoned access control, camera retention, clean-desk enforcement and an exportable visitor trail for audits.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">🩺</div><h3 class="card-h">Healthcare &amp; Life Sciences</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Restricted zones for clinical review, lockable records storage and network segregation from the rest of the building.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">⚙️</div><h3 class="card-h">Engineering &amp; Manufacturing</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Heavy-workstation power budgets, plotter and print rooms, and centres near the industrial corridors your plants sit on.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">📊</div><h3 class="card-h">Consulting &amp; Professional Services</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Client-facing reception, bookable meeting inventory across cities, and one agreement covering every location.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">🛍️</div><h3 class="card-h">D2C &amp; E-commerce</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Small core cabins with on-demand event space for launches, shoots and seasonal team expansion.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+              <a class="card" style="padding:26px"><div style="font-size:28px;margin-bottom:14px">🎬</div><h3 class="card-h">Media, Design &amp; Creative</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Acoustically treated rooms, colour-accurate lighting and studio space that does not need a nine-year commitment.</p><div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--accent)">Explore →</div></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec soft">
+          <div class="wrap">
+            <h2 class="sec-h" style="margin-bottom:12px">What changes by industry — and what doesn't</h2>
+            <p class="lede" style="margin-bottom:40px">Grade-A building, managed operations and a single invoice are constant. These four are where the brief actually differs.</p>
+            <div class="grid g4">
+              <div class="card" style="padding:26px"><div class="chip acc" style="margin-bottom:14px">01</div><h3 class="card-h" style="font-size:18px">Security &amp; compliance depth</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">From standard badge entry to zone-level access, camera retention windows and exportable audit logs.</p></div>
+              <div class="card" style="padding:26px"><div class="chip acc" style="margin-bottom:14px">02</div><h3 class="card-h" style="font-size:18px">Floor design &amp; density</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Open collaboration for product teams, cellular layouts for clinical and legal review, high-power benches for CAD.</p></div>
+              <div class="card" style="padding:26px"><div class="chip acc" style="margin-bottom:14px">03</div><h3 class="card-h" style="font-size:18px">Location logic</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Talent catchment for GCCs, airport proximity for consulting, industrial corridors for engineering.</p></div>
+              <div class="card" style="padding:26px"><div class="chip acc" style="margin-bottom:14px">04</div><h3 class="card-h" style="font-size:18px">Growth shape</h3><p style="font-size:14px;color:var(--muted);margin-top:9px">Step-up blocks for scaling GCCs, flat seat counts for stable practices, seasonal flex for D2C.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec tight">
+          <div class="wrap">
+            <div class="sec-head"><h2 class="sec-h">Teams already doing it</h2><a style="font-size:14px;font-weight:700;color:var(--accent)">All case studies →</a></div>
+            <div class="grid g3">
+              <a class="card"><div class="ph" style="height:180px" data-spec="760×500">Client floor</div><div style="padding:22px"><span class="chip acc">GCC</span><h3 class="card-h" style="font-size:18px;margin-top:11px">220 seats live in 47 days — Corveta Health, Chennai</h3></div></a>
+              <a class="card"><div class="ph" style="height:180px" data-spec="760×500">Client floor</div><div style="padding:22px"><span class="chip acc">BFSI</span><h3 class="card-h" style="font-size:18px;margin-top:11px">Trellis Pay cleared an RBI audit from a managed floor</h3></div></a>
+              <a class="card"><div class="ph" style="height:180px" data-spec="760×500">Client floor</div><div style="padding:22px"><span class="chip acc">Engineering</span><h3 class="card-h" style="font-size:18px;margin-top:11px">Nimbus Logic built a tier‑2 design centre in Coimbatore</h3></div></a>
+            </div>
+          </div>
+        </div>
+
+        <div data-wzfoot></div>
+      </div>
+    </div>
+
+    <div class="note"><b><span class="pin">2</span>Child template — <code>/industry-solutions/[slug]/</code>.</b> Same shell, this section order: <b>1</b> Hero (industry H1 + lede + CTA) · <b>2</b> “What [industry] teams ask us for” — 4–6 requirement cards · <b>3</b> Requirement → WorkEZ answer table (2 columns, the highest-converting block on the page) · <b>4</b> Recommended centres — 3 location cards filtered by <code>industryFit</code> · <b>5</b> Case studies filtered to this industry · <b>6</b> Industry-specific FAQ (5–7 Qs, <code>FAQPage</code> schema) · <b>7</b> Lead form pre-set to that industry so the CRM records it. Mocked below.</div>
+
+    <div class="slab-body" style="border-top:1px solid var(--line-soft)">
+      <div class="wz">
+        <div class="crumb" style="border-bottom:1px solid var(--line-soft);padding-bottom:16px"><a>Home</a> › <a>Industry Solutions</a> › <b>GCC &amp; Global Capability Centres</b></div>
+        <div class="sec tight">
+          <div class="wrap">
+            <div class="eyebrow">Industry Solution · Child template</div>
+            <h1 class="big" style="font-size:38px;max-width:20ch">Managed offices for Global Capability Centres in India</h1>
+            <p class="lede">Open a Chennai, Bengaluru, Coimbatore or Kochi centre on a hiring timeline instead of a construction timeline.</p>
+
+            <h2 class="sec-h" style="font-size:26px;margin:52px 0 22px">What GCC teams ask us for</h2>
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+              <div style="display:grid;grid-template-columns:1fr 1.25fr;background:var(--ink);color:#fff;font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase"><div style="padding:14px 22px">The requirement</div><div style="padding:14px 22px;border-left:1px solid rgba(255,255,255,.14)">How WorkEZ answers it</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1.25fr;border-bottom:1px solid var(--line-soft)"><div style="padding:20px 22px;font-weight:700;font-size:15px">A usable floor before the lease cycle allows one</div><div style="padding:20px 22px;font-size:15px;color:var(--muted);border-left:1px solid var(--line-soft)">Fitted inventory held across 20+ centres; client-specific work runs parallel to contracting. Typical handover 6–8 weeks from signature.</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1.25fr;border-bottom:1px solid var(--line-soft)"><div style="padding:20px 22px;font-weight:700;font-size:15px">Parent-company security sign-off</div><div style="padding:20px 22px;font-size:15px;color:var(--muted);border-left:1px solid var(--line-soft)">Zone-level access control, CCTV with agreed retention, exportable digital visitor logs, isolated VLAN and a lockable rack room.</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1.25fr;border-bottom:1px solid var(--line-soft)"><div style="padding:20px 22px;font-weight:700;font-size:15px">A floor that helps you hire</div><div style="padding:20px 22px;font-size:15px;color:var(--muted);border-left:1px solid var(--line-soft)">Metro-adjacent addresses, branded reception from day one, and event space for weekend walk-in drives.</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1.25fr"><div style="padding:20px 22px;font-weight:700;font-size:15px">Headroom to double without relocating</div><div style="padding:20px 22px;font-size:15px;color:var(--muted);border-left:1px solid var(--line-soft)">First right on adjacent inventory, drawn down in blocks on 60 days' notice, under the same agreement.</div></div>
+            </div>
+
+            <h2 class="sec-h" style="font-size:26px;margin:52px 0 22px">Centres set up for GCCs</h2>
+            <div class="grid g3">
+              <a class="card"><div class="ph" style="height:170px" data-spec="760×500">Centre exterior</div><div style="padding:22px"><h3 class="card-h" style="font-size:18px">Willow Square, Guindy</h3><p style="font-size:13.5px;color:var(--muted);margin-top:7px">Chennai · 4 floors · 1,800 seats · metro-adjacent</p></div></a>
+              <a class="card"><div class="ph" style="height:170px" data-spec="760×500">Centre exterior</div><div style="padding:22px"><h3 class="card-h" style="font-size:18px">Urban Square, OMR</h3><p style="font-size:13.5px;color:var(--muted);margin-top:7px">Chennai · IT corridor · large-floor-plate options</p></div></a>
+              <a class="card"><div class="ph" style="height:170px" data-spec="760×500">Centre exterior</div><div style="padding:22px"><h3 class="card-h" style="font-size:18px">Vivera, Saravanampatti</h3><p style="font-size:13.5px;color:var(--muted);margin-top:7px">Coimbatore · 3 floors · 2,250 workstations</p></div></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-row">
+      <div class="note"><b><span class="pin">3</span>Nav placement.</b> “Industry Solutions” sits inside the existing <b>Solutions</b> dropdown as a fourth item, below Enterprise / Private Cabins / Meeting &amp; Event. Do not create a new top-level nav item — the header is already at five.</div>
+      <div class="note"><b><span class="pin">4</span>Don't ship all eight at once.</b> Launch the hub plus the three with real proof behind them (GCC, BFSI, IT &amp; SaaS). Five empty industry pages with recycled copy is a thin-content pattern that drags the whole cluster down. Add the rest as case studies land.</div>
+      <div class="note"><b><span class="pin">5</span>Schema.</b> Hub gets <code>CollectionPage</code> + <code>ItemList</code>. Children get <code>Service</code> (with <code>areaServed</code> = the four cities) + <code>FAQPage</code> + <code>BreadcrumbList</code>.</div>
+      <div class="note"><b><span class="pin">6</span>Form pre-fill.</b> The lead form on each child page ships a hidden <code>industry</code> field matching the slug. That is what makes pre-sales routing by vertical possible in item 8 — without it, every lead lands in one undifferentiated queue.</div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: MEDIA KIT ══════════════ -->
+<section class="view" id="v-mediakit">
+  <div class="slab">
+    <div class="slab-hd"><h2>Media Kit</h2><span class="slab-url">/media-kit/</span><span class="slab-tag new">New page</span><span class="slab-tag">Mostly static</span></div>
+    <div class="note"><b><span class="pin">1</span>Who this page is for.</b> Three audiences, one page: a journalist on deadline who needs the boilerplate and a logo in the next ten minutes, a partner or aggregator building a listing, and an event organiser needing founder bios and headshots. All three want to <b>take things and leave</b> — so nothing here is gated. Gating a logo download costs you the mention. The only lead capture on the page is an optional press-enquiry form at the bottom.</div>
+    <div class="slab-body">
+      <div class="wz">
+        <div data-wzhead></div>
+        <div class="crumb"><a>Home</a> › <b>Media Kit</b></div>
+
+        <div class="sec dark tight" style="padding:66px 0 60px">
+          <div class="wrap">
+            <div class="eyebrow">Press &amp; Media</div>
+            <h1 class="big" style="max-width:15ch">WorkEZ Media Kit</h1>
+            <p class="lede">Logos, brand colours, company facts, leadership bios and photographs of our centres. Everything here is free to use under the terms at the bottom of this page. Nothing is behind a form.</p>
+            <div style="display:flex;gap:12px;margin-top:32px;flex-wrap:wrap">
+              <a class="btn btn-p">⬇ Download full kit (.zip · 48 MB)</a>
+              <a class="btn btn-lt">✉ press@workez.in</a>
+              <a class="btn btn-lt">Request an interview</a>
+            </div>
+            <p style="font-size:12.5px;color:#8C9098;margin-top:18px">Last updated: 29 July 2026 · Kit version 3.1</p>
+          </div>
+        </div>
+
+        <!-- FACT SHEET -->
+        <div class="sec tight">
+          <div class="wrap">
+            <h2 class="sec-h" style="margin-bottom:26px">Company at a glance</h2>
+            <div class="grid g2" style="gap:0;border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+              <div style="border-right:1px solid var(--line-soft)">
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">Name</span><b>WorkEZ</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">What we do</span><b style="text-align:right">Managed and flexible office spaces</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">Founded</span><b style="text-align:right">2019 (operations began 20 Sept 2019)</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">Headquarters</span><b>Chennai, Tamil Nadu</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;font-size:14.5px"><span style="color:var(--muted)">Website</span><b>workez.in</b></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">Cities</span><b style="text-align:right">Chennai, Bengaluru, Coimbatore, Kochi</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">Centres</span><b>13</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">Area under management</span><b>1.63 million+ sq. ft.</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;border-bottom:1px solid var(--line-soft);font-size:14.5px"><span style="color:var(--muted)">Seats</span><b>24,000+</b></div>
+                <div style="display:flex;justify-content:space-between;gap:14px;padding:15px 24px;font-size:14.5px"><span style="color:var(--muted)">Leadership</span><b style="text-align:right">Y S Sunil Reddy, Founder &amp; Chairman<br>Prathap Murali, CEO</b></div>
+              </div>
+            </div>
+            <div class="sample" style="margin-top:18px">⚠︎ NUMBERS CONFLICT ACROSS THE SITE. About Us says 13 centres in 4 cities. The homepage says “In 3 Cities. Over 20 Locations.” Pick one set, fix every page, then publish. See note 6 below.</div>
+          </div>
+        </div>
+
+        <!-- BOILERPLATE -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <h2 class="sec-h" style="margin-bottom:10px">Boilerplate</h2>
+            <p class="lede" style="margin-bottom:32px">Approved descriptions at three lengths, with a copy button on each. Journalists paste these word for word, so whatever is written here is how WorkEZ gets described everywhere else.</p>
+            <div class="grid g3">
+              <div class="card" style="padding:26px;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span class="chip acc">Short · 28 words</span><span style="font-size:12px;font-weight:700;color:var(--accent);cursor:pointer">⧉ Copy</span></div><p style="font-size:14.5px;color:#3D3D3D;flex:1">WorkEZ operates managed office spaces across Chennai, Bengaluru, Coimbatore and Kochi. It handles the fit-out, the facilities and the day to day running, so client teams can move in and get to work.</p></div>
+              <div class="card" style="padding:26px;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span class="chip acc">Medium · 62 words</span><span style="font-size:12px;font-weight:700;color:var(--accent);cursor:pointer">⧉ Copy</span></div><p style="font-size:14.5px;color:#3D3D3D;flex:1">WorkEZ operates managed office spaces in Chennai, Bengaluru, Coimbatore and Kochi. Founded in 2019, it runs 13 centres covering more than 1.63 million sq. ft. and over 24,000 seats. Clients take a fitted Grade A floor and WorkEZ runs everything on it, from power backup and internet to IT support, security and housekeeping, on a single agreement.</p></div>
+              <div class="card" style="padding:26px;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span class="chip acc">Long · 165 words</span><span style="font-size:12px;font-weight:700;color:var(--accent);cursor:pointer">⧉ Copy</span></div><p style="font-size:14px;color:#3D3D3D;flex:1;line-height:1.7">WorkEZ operates managed office spaces across Chennai, Bengaluru, Coimbatore and Kochi.<br><br>The company began operations on 20 September 2019 with three locations, 2.75 lakh sq. ft. and just over 5,000 seats. It now runs 13 centres spanning more than 1.63 million sq. ft. and over 24,000 seats.<br><br>WorkEZ was set up to simplify how organisations open and run an office. Rather than signing a long lease and then managing a contractor, an internet provider, a facilities agency and a security vendor separately, clients take a fitted floor and WorkEZ operates everything on it: power and UPS backup, enterprise internet, IT support, housekeeping, pantry, security and visitor management, on one monthly invoice with one point of contact.<br><br>The company offers enterprise office spaces, private managed offices, and conference and event spaces. Its stated vision is to become India's largest managed office space provider.<br><br>WorkEZ is led by Founder and Chairman Y S Sunil Reddy and Chief Executive Officer Prathap Murali.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOGOS -->
+        <div class="sec tight">
+          <div class="wrap">
+            <div class="sec-head" style="margin-bottom:28px"><div><h2 class="sec-h">Logo pack</h2><p class="lede" style="margin-top:10px">SVG for digital use, PNG at 2000px for print. Take one file or the whole set.</p></div><a class="btn btn-o btn-sm">⬇ All logos (.zip)</a></div>
+            <div class="grid g4">
+              <div class="card"><div style="height:150px;background:#fff;display:grid;place-items:center;border-bottom:1px solid var(--line-soft)"><span style="font-weight:800;font-size:26px;letter-spacing:-.8px">Work<span style="color:var(--accent)">EZ</span></span></div><div style="padding:16px 18px"><div style="font-weight:700;font-size:14px">Primary, light background</div><div style="font-size:12px;color:var(--accent);font-weight:700;margin-top:7px;cursor:pointer">SVG · PNG</div></div></div>
+              <div class="card"><div style="height:150px;background:var(--ink);display:grid;place-items:center;border-bottom:1px solid var(--line-soft)"><span style="font-weight:800;font-size:26px;letter-spacing:-.8px;color:#fff">Work<span style="color:var(--accent)">EZ</span></span></div><div style="padding:16px 18px"><div style="font-weight:700;font-size:14px">Primary, dark background</div><div style="font-size:12px;color:var(--accent);font-weight:700;margin-top:7px;cursor:pointer">SVG · PNG</div></div></div>
+              <div class="card"><div style="height:150px;background:var(--surface);display:grid;place-items:center;border-bottom:1px solid var(--line-soft)"><span style="font-weight:800;font-size:26px;letter-spacing:-.8px">WorkEZ</span></div><div style="padding:16px 18px"><div style="font-weight:700;font-size:14px">Monochrome</div><div style="font-size:12px;color:var(--accent);font-weight:700;margin-top:7px;cursor:pointer">SVG · PNG</div></div></div>
+              <div class="card"><div style="height:150px;background:var(--accent);display:grid;place-items:center;border-bottom:1px solid var(--line-soft)"><span style="font-weight:800;font-size:32px;color:#fff">W</span></div><div style="padding:16px 18px"><div style="font-weight:700;font-size:14px">Monogram / app icon</div><div style="font-size:12px;color:var(--accent);font-weight:700;margin-top:7px;cursor:pointer">SVG · PNG</div></div></div>
+            </div>
+            <div class="grid g2" style="margin-top:26px">
+              <div class="card" style="padding:24px;border-color:rgba(30,142,90,.3);background:rgba(30,142,90,.04)"><div style="font-weight:800;font-size:14px;color:var(--ok);margin-bottom:12px">✓ Please do</div><ul style="font-size:14px;color:#3D3D3D;padding-left:18px;line-height:1.9"><li>Keep clear space equal to the height of the “W” on all sides</li><li>Use the dark-background version on any surface darker than #808080</li><li>Scale proportionally; minimum width 90px digital / 22mm print</li></ul></div>
+              <div class="card" style="padding:24px;border-color:rgba(255,70,0,.3);background:var(--accent-soft)"><div style="font-weight:800;font-size:14px;color:#C43700;margin-bottom:12px">✕ Please don't</div><ul style="font-size:14px;color:#3D3D3D;padding-left:18px;line-height:1.9"><li>Recolour, add gradients, outlines or drop shadows</li><li>Stretch, rotate, or place over a busy photo without a scrim</li><li>Rebuild the wordmark in a different typeface</li></ul></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLOURS + TYPE -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <div class="grid g2" style="gap:48px">
+              <div>
+                <h2 class="sec-h" style="font-size:28px;margin-bottom:22px">Brand colours</h2>
+                <div class="grid g2" style="gap:14px">
+                  <div class="card"><div style="height:88px;background:#1F1F1F"></div><div style="padding:13px 15px"><div style="font-weight:700;font-size:13.5px">WorkEZ Ink</div><div style="font-size:12px;color:var(--muted)">HEX #1F1F1F · RGB 31 31 31</div></div></div>
+                  <div class="card"><div style="height:88px;background:#FF4600"></div><div style="padding:13px 15px"><div style="font-weight:700;font-size:13.5px">WorkEZ Orange</div><div style="font-size:12px;color:var(--muted)">HEX #FF4600 · RGB 255 70 0</div></div></div>
+                  <div class="card"><div style="height:88px;background:#F5F7FA;border-bottom:1px solid var(--line-soft)"></div><div style="padding:13px 15px"><div style="font-weight:700;font-size:13.5px">Mist</div><div style="font-size:12px;color:var(--muted)">HEX #F5F7FA · RGB 245 247 250</div></div></div>
+                  <div class="card"><div style="height:88px;background:#F9F4E4;border-bottom:1px solid var(--line-soft)"></div><div style="padding:13px 15px"><div style="font-weight:700;font-size:13.5px">Cream</div><div style="font-size:12px;color:var(--muted)">HEX #F9F4E4 · RGB 249 244 228</div></div></div>
+                </div>
+              </div>
+              <div>
+                <h2 class="sec-h" style="font-size:28px;margin-bottom:22px">Typography</h2>
+                <div class="card" style="padding:28px">
+                  <div style="font-size:40px;font-weight:800;letter-spacing:-1.4px;line-height:1.1">Aa Bb Cc</div>
+                  <div style="font-size:13.5px;color:var(--muted);margin-top:12px">Primary typeface, used for headings and body</div>
+                  <div style="border-top:1px solid var(--line-soft);margin-top:20px;padding-top:18px;font-size:13.5px;color:var(--muted);line-height:1.9">
+                    Weights in use: 400 Regular · 600 SemiBold · 700 Bold · 800 ExtraBold<br>
+                    Fallback stack: system sans-serif<br>
+                    <span style="color:var(--accent);font-weight:700;cursor:pointer">⬇ Download webfont package</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEADERSHIP -->
+        <div class="sec tight">
+          <div class="wrap">
+            <h2 class="sec-h" style="margin-bottom:10px">Leadership</h2>
+            <p class="lede" style="margin-bottom:32px">High-resolution headshots and approved bios. Each card downloads a 2000×2400px JPEG along with a short and a long bio.</p>
+            <div class="grid g4">
+              <div class="card"><div class="ph" data-spec="1000×1200 · JPEG · alt: Y S Sunil Reddy, Founder and Chairman, WorkEZ" style="height:230px">Headshot</div><div style="padding:20px"><div style="font-weight:800;font-size:16px">Y S Sunil Reddy</div><div style="font-size:13px;color:var(--muted);margin-bottom:10px">Founder &amp; Chairman</div><div style="font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer">⬇ Photo + bio</div></div></div>
+              <div class="card"><div class="ph" data-spec="1000×1200 · JPEG" style="height:230px">Headshot</div><div style="padding:20px"><div style="font-weight:800;font-size:16px">Prathap Murali</div><div style="font-size:13px;color:var(--muted);margin-bottom:10px">Chief Executive Officer</div><div style="font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer">⬇ Photo + bio</div></div></div>
+              <div class="card"><div class="ph" data-spec="1000×1200 · JPEG" style="height:230px">Headshot</div><div style="padding:20px"><div style="font-weight:800;font-size:16px">S Saravanan</div><div style="font-size:13px;color:var(--muted);margin-bottom:10px">Head of Finance</div><div style="font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer">⬇ Photo + bio</div></div></div>
+              <div class="card"><div class="ph" data-spec="1000×1200 · JPEG" style="height:230px">Headshot</div><div style="padding:20px"><div style="font-weight:800;font-size:16px">[Name]</div><div style="font-size:13px;color:var(--muted);margin-bottom:10px">[Title]</div><div style="font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer">⬇ Photo + bio</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMAGERY + AWARDS -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <div class="sec-head" style="margin-bottom:26px"><div><h2 class="sec-h">Centre photography</h2><p class="lede" style="margin-top:10px">Press-cleared photographs of our centres. A credit line comes with each download.</p></div><a class="btn btn-o btn-sm">⬇ Photo pack (.zip)</a></div>
+            <div class="grid g4" style="gap:16px">
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Reception</div>
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Open workspace</div>
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Meeting room</div>
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Building exterior</div>
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Cafeteria</div>
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Private cabin</div>
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Event space</div>
+              <div class="ph" data-spec="3000×2000 · JPEG" style="height:160px;border-radius:12px">Lounge</div>
+            </div>
+
+            <h2 class="sec-h" style="font-size:28px;margin:52px 0 22px">Awards &amp; recognition</h2>
+            <div class="grid g4" style="gap:16px">
+              <div class="card" style="padding:22px;text-align:center"><div class="ph" style="height:70px;border-radius:8px;margin-bottom:12px" data-spec="">Award logo</div><div style="font-size:13px;font-weight:700">BW Realty World's Flex Spaces Awards</div></div>
+              <div class="card" style="padding:22px;text-align:center"><div class="ph" style="height:70px;border-radius:8px;margin-bottom:12px" data-spec="">Award logo</div><div style="font-size:13px;font-weight:700">Realty+ Flex Spaces Excellence Awards 2024</div></div>
+              <div class="card" style="padding:22px;text-align:center"><div class="ph" style="height:70px;border-radius:8px;margin-bottom:12px" data-spec="">Award logo</div><div style="font-size:13px;font-weight:700">Economic Times Real Estate Awards</div></div>
+              <div class="card" style="padding:22px;text-align:center"><div class="ph" style="height:70px;border-radius:8px;margin-bottom:12px" data-spec="">Badge</div><div style="font-size:13px;font-weight:700">Certified green building centres</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IN THE NEWS + PRESS CONTACT -->
+        <div class="sec tight">
+          <div class="wrap">
+            <div class="grid g2" style="gap:56px;align-items:start">
+              <div>
+                <h2 class="sec-h" style="font-size:28px;margin-bottom:22px">In the news</h2>
+                <div style="display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line-soft)">
+                  <a style="padding:18px 0;border-bottom:1px solid var(--line-soft);display:block"><div style="font-size:12px;color:var(--muted-2);font-weight:700;letter-spacing:.4px">[PUBLICATION] · [DATE]</div><div style="font-weight:700;font-size:16px;margin-top:5px">[Headline of the coverage] ↗</div></a>
+                  <a style="padding:18px 0;border-bottom:1px solid var(--line-soft);display:block"><div style="font-size:12px;color:var(--muted-2);font-weight:700;letter-spacing:.4px">[PUBLICATION] · [DATE]</div><div style="font-weight:700;font-size:16px;margin-top:5px">[Headline of the coverage] ↗</div></a>
+                  <a style="padding:18px 0;border-bottom:1px solid var(--line-soft);display:block"><div style="font-size:12px;color:var(--muted-2);font-weight:700;letter-spacing:.4px">[PUBLICATION] · [DATE]</div><div style="font-weight:700;font-size:16px;margin-top:5px">[Headline of the coverage] ↗</div></a>
+                </div>
+                <a style="display:inline-block;margin-top:20px;font-size:14px;font-weight:700;color:var(--accent)">All press coverage →</a>
+              </div>
+              <div class="card" style="padding:32px">
+                <h3 class="card-h">Press enquiries</h3>
+                <p style="font-size:14.5px;color:var(--muted);margin:10px 0 22px">For interviews, data requests, site visits, or anything not covered above. We reply within one working day.</p>
+                <div style="font-size:15px;font-weight:700;margin-bottom:6px">✉ press@workez.in</div>
+                <div style="font-size:15px;font-weight:700;margin-bottom:24px">☎ +91 95512 45124</div>
+                <div class="field"><label>Name</label><input class="inp" placeholder="Your name"></div>
+                <div class="field"><label>Publication / organisation</label><input class="inp" placeholder="Where you're writing for"></div>
+                <div class="field"><label>Email</label><input class="inp" placeholder="you@publication.com"></div>
+                <div class="field"><label>What do you need?</label><textarea class="inp" rows="3" placeholder="Interview, data, site visit, images…"></textarea></div>
+                <a class="btn btn-p" style="width:100%;justify-content:center">Send enquiry</a>
+              </div>
+            </div>
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);padding:24px 28px;margin-top:44px;background:var(--surface)">
+              <div style="font-weight:800;font-size:14px;margin-bottom:8px">Usage terms</div>
+              <p style="font-size:13.5px;color:var(--muted);line-height:1.75">Use anything on this page in editorial coverage, directory listings and partner materials without asking us first. Two conditions: please do not alter the assets, and please do not use them in a way that suggests WorkEZ endorses a product, service or organisation. The WorkEZ name and logo are trademarks. For commercial or co-branded use, write to press@workez.in and we will sort it out with you.</p>
+            </div>
+          </div>
+        </div>
+
+        <div data-wzfoot></div>
+      </div>
+    </div>
+    <div class="note-row">
+      <div class="note"><b><span class="pin">2</span>Build note — no gate, but do measure.</b> Every download fires a GA4 event <code>media_kit_download</code> with <code>{asset_name, asset_type}</code>. That's how you learn which assets matter without putting a form in a journalist's way.</div>
+      <div class="note"><b><span class="pin">3</span>File hosting.</b> Serve the .zip and large JPEGs from object storage or a CDN path, not the app server. Set <code>Content-Disposition: attachment</code> so clicking downloads rather than opening a 40 MB image in-browser.</div>
+      <div class="note"><b><span class="pin">4</span>Freshness is the whole job.</b> Put “Last updated” and a kit version in the hero and set a quarterly calendar reminder. A media kit citing 14 centres when you have 20+ actively damages credibility with exactly the audience it's built for.</div>
+      <div class="note"><b><span class="pin">5</span>Schema + SEO.</b> <code>Organization</code> with <code>logo</code>, <code>sameAs</code> (all socials), <code>foundingDate</code>, <code>address</code>, and a <code>contactPoint</code> of type <code>"public relations"</code>. This page is also a strong AI-citation source — LLMs answering “what is WorkEZ” will pull the boilerplate verbatim, so write it the way you want to be described.</div>
+      <div class="note" style="border-left-color:#B23200;background:#FFF3EE"><b><span class="pin">6</span>Blocker: your own site disagrees with itself.</b> The About page states <b>13 centres, 4 cities, 1.63m+ sq ft, 24,000+ seats</b>. The homepage headline says <b>“In 3 Cities. Over 20 Locations.”</b> The footer lists <b>10 named centres</b>. Three different answers to the same question. Copy above uses the About page figures because they are the most specific and most recently stated, but somebody at WorkEZ has to confirm which set is true and then correct every other page. A media kit is the one page where a wrong number gets quoted back at you for years, and it is the first thing a journalist checks against your own homepage.</div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: BROCHURE + LEAD GATE ══════════════ -->
+<section class="view" id="v-brochure">
+  <div class="slab">
+    <div class="slab-hd"><h2>Download Brochure + gated lead form</h2><span class="slab-url">/location/[city]/[area]/</span><span class="slab-tag edit">Section added to existing page</span></div>
+    <div class="note"><b><span class="pin">1</span>Where it goes.</b> Directly after the <b>Specifications + Map</b> row and before <b>Amenities</b> on every location page. That is the moment a serious enquirer wants to take the details to their team — which is exactly when a brochure is worth an email address. A brochure button in the hero converts worse and annoys casual visitors. There is also a persistent secondary entry point: a sticky bottom-right pill on mobile, and a text link inside the existing “Interested in this location?” form block.</div>
+    <div class="slab-body">
+      <div class="wz">
+        <div style="padding:34px 0 10px"><div class="wrap"><div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)">↑ Existing: Specifications &amp; Map</div></div></div>
+
+        <!-- BROCHURE BAND -->
+        <div class="sec tight" style="padding:40px 0 56px">
+          <div class="wrap">
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;display:grid;grid-template-columns:1fr 300px;background:var(--surface)">
+              <div style="padding:36px 40px">
+                <span class="chip acc" style="margin-bottom:14px">Centre brochure · PDF · 4.2 MB</span>
+                <h2 class="sec-h" style="font-size:27px">Take WorkEZ Willow Square to your team</h2>
+                <p style="font-size:15.5px;color:var(--muted);margin-top:12px;max-width:60ch">Floor plans, seat counts and layout options, the full amenity list, connectivity and transit detail, indicative pricing bands and a photo set — everything in one PDF you can forward or print.</p>
+                <div style="display:flex;gap:22px;margin-top:22px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);font-weight:600">
+                  <span>✓ Floor plans &amp; capacity</span><span>✓ Amenities in full</span><span>✓ Indicative pricing</span><span>✓ Transit &amp; landmarks</span>
+                </div>
+                <a class="btn btn-p" style="margin-top:26px" onclick="document.getElementById('brochureModal').style.display='flex'">⬇ Download brochure</a>
+                <p style="font-size:12px;color:var(--muted-2);margin-top:12px">Takes 20 seconds — we'll email it to you and open it right away.</p>
+              </div>
+              <div class="ph" data-spec="600×760 · WebP · brochure cover mockup" style="border-left:1px solid var(--line-soft)">Brochure cover</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:0 0 34px"><div class="wrap"><div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)">↓ Existing: Amenities</div></div></div>
+      </div>
+    </div>
+
+    <div class="note"><b><span class="pin">2</span>The gate.</b> Modal, not a separate page — a page change loses roughly a third of intent. Four fields only. Everything else you want to know (seats, timeline) is already collected by the enquiry form further down the page; asking twice kills completion. Both states are shown side by side below.</div>
+
+    <div class="slab-body" style="background:#EDEFF3;padding:34px 24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;max-width:1180px;margin:0 auto">
+
+        <!-- MODAL STATE A -->
+        <div>
+          <div style="font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">State A — form</div>
+          <div style="background:#fff;border-radius:var(--r-card);overflow:hidden;box-shadow:var(--shadow-md);max-width:520px">
+            <div style="display:grid;grid-template-columns:1fr 130px">
+              <div style="padding:30px 32px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><span class="chip acc">PDF · 4.2 MB</span><span style="font-size:20px;color:var(--muted-2);cursor:pointer">×</span></div>
+                <h3 class="card-h" style="font-size:21px;margin-top:12px">Where should we send it?</h3>
+                <p style="font-size:13.5px;color:var(--muted);margin:8px 0 22px">WorkEZ Willow Square, Guindy — brochure with floor plans and indicative pricing.</p>
+                <div class="field"><label>Full name <em>*</em></label><input class="inp" placeholder="Your name"></div>
+                <div class="field"><label>Work email <em>*</em></label><input class="inp" placeholder="you@company.com"></div>
+                <div class="field"><label>Phone <em>*</em></label><input class="inp" placeholder="+91 00000 00000"></div>
+                <div class="field"><label>Company</label><input class="inp" placeholder="Optional"></div>
+                <div class="consent"><i></i><span>I agree to WorkEZ's <b>Terms of Service</b> and <b>Privacy Policy</b>, and to being contacted about this enquiry.</span></div>
+                <a class="btn btn-p" style="width:100%;justify-content:center">Get the brochure</a>
+              </div>
+              <div class="ph" data-spec="" style="font-size:9px">Cover</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL STATE B -->
+        <div>
+          <div style="font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">State B — success</div>
+          <div style="background:#fff;border-radius:var(--r-card);overflow:hidden;box-shadow:var(--shadow-md);max-width:520px;padding:38px 34px;text-align:center">
+            <div style="width:58px;height:58px;border-radius:50%;background:rgba(30,142,90,.12);color:var(--ok);display:grid;place-items:center;font-size:26px;margin:0 auto 18px">✓</div>
+            <h3 class="card-h" style="font-size:21px">Your brochure is downloading</h3>
+            <p style="font-size:14px;color:var(--muted);margin:10px 0 22px">We've also emailed a copy to <b style="color:var(--ink)">you@company.com</b>. Didn't start? <span style="color:var(--accent);font-weight:700">Download again</span>.</p>
+            <div style="border-top:1px solid var(--line-soft);padding-top:22px">
+              <div style="font-weight:700;font-size:15px;margin-bottom:8px">While you're here</div>
+              <p style="font-size:13.5px;color:var(--muted);margin-bottom:16px">Want to walk the floor? We can usually arrange a tour within 48 hours.</p>
+              <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-p btn-sm">Book a tour</a><a class="btn btn-o btn-sm">See other Chennai centres</a></div>
+            </div>
+          </div>
+          <div class="note" style="margin-top:16px;border-radius:10px;background:#fff"><b>Don't waste the success state.</b> Someone who just gave you a work email and downloaded a floor plan is the warmest visitor on the site. A dead “thanks!” screen throws that away — the tour CTA belongs here.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-row">
+      <div class="note"><b><span class="pin">3</span>Delivery mechanics.</b> On submit: write the lead, fire the notification (item 8), start the file download immediately via a <b>signed, expiring URL</b> (24h), <i>and</i> send the email copy. Do not make the user wait for the email — and do not expose the raw PDF path, or the gate is one right-click away from being pointless.</div>
+      <div class="note"><b><span class="pin">4</span>Returning visitors.</b> Set a <code>wz_brochure_lead</code> cookie for 90 days. If it exists, skip the modal entirely and download on click. Making a known lead re-type their email every visit is friction with zero data value.</div>
+      <div class="note"><b><span class="pin">5</span>Validation &amp; hygiene.</b> Require a business email format, block the common free-mail domains with a soft warning (not a hard block — founders use Gmail), honeypot field plus a time-to-submit check for bots, and rate-limit to 3 submissions per IP per hour.</div>
+      <div class="note"><b><span class="pin">6</span>Tracking.</b> <code>brochure_modal_open</code> → <code>brochure_form_submit</code> → <code>brochure_download</code>, each carrying <code>centre_slug</code> and <code>city</code>. The open-to-submit ratio per centre tells you which brochures are worth refreshing.</div>
+      <div class="note"><b><span class="pin">7</span>SEO safety.</b> The brochure PDF itself should be <code>noindex</code> via <code>X-Robots-Tag</code> header. Otherwise Google indexes the PDF, ranks it instead of your location page, and visitors bypass the form entirely.</div>
+      <div class="note"><b><span class="pin">8</span>Per-centre asset.</b> Each of the 20+ centres needs its own brochure file, uploaded as a field on the existing centre record — not one generic corporate PDF. A brochure that doesn't show <i>this</i> floor is worth less than no brochure.</div>
+    </div>
+  </div>
+
+  <div id="brochureModal" style="display:none;position:fixed;inset:0;background:rgba(31,31,31,.6);z-index:9999;align-items:center;justify-content:center;padding:20px" onclick="this.style.display='none'">
+    <div style="background:#fff;border-radius:16px;padding:30px;max-width:420px;font-size:14px" onclick="event.stopPropagation()">
+      <b style="font-size:16px">Mockup only</b><p style="margin-top:8px;color:#6E6E6E">This is where the gated lead-capture modal opens. Both of its states are laid out below the mockup so you can see them together. Click anywhere to close.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ VIEW: GOOGLE MAPS ══════════════ -->
+<section class="view" id="v-maps">
+  <div class="slab">
+    <div class="slab-hd"><h2>Google Maps module</h2><span class="slab-url">/location/[city]/[area]/</span><span class="slab-tag edit">Fix + upgrade existing block</span></div>
+    <div class="note"><b><span class="pin">1</span>Current state.</b> The map container already exists in the design and on the live location pages, but it renders as <b>“Loading map…”</b> — the embed never initialises. So this item is one bug fix plus three upgrades that turn a decorative box into the block that answers the question every enquirer actually has: <i>how far is it from where my people live?</i></div>
+    <div class="slab-body">
+      <div class="wz">
+        <div class="sec tight">
+          <div class="wrap">
+            <div class="grid g2" style="gap:40px;align-items:start">
+              <div>
+                <h2 class="sec-h" style="font-size:27px;margin-bottom:22px">Specifications</h2>
+                <div style="display:flex;flex-direction:column;gap:16px">
+                  <div class="metric"><span class="mi">📍</span><div class="ml" style="font-size:14.5px;color:var(--ink)"><b>Landmark:</b> Express Avenue Mall</div></div>
+                  <div class="metric"><span class="mi">🏢</span><div class="ml" style="font-size:14.5px;color:var(--ink)"><b>Floors &amp; area:</b> 4 floors · 100,000 sq. ft.</div></div>
+                  <div class="metric"><span class="mi">🪑</span><div class="ml" style="font-size:14.5px;color:var(--ink)"><b>Total capacity:</b> 1,800 seats</div></div>
+                  <div class="metric"><span class="mi">🗣️</span><div class="ml" style="font-size:14.5px;color:var(--ink)"><b>Meeting:</b> 3 meeting rooms, 1 discussion room, 40- &amp; 200-seater event spaces</div></div>
+                </div>
+              </div>
+              <div>
+                <div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+                  <div style="height:300px;background:linear-gradient(135deg,#E4E9EE,#D3DBE4);position:relative;display:grid;place-items:center">
+                    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.55) 1px,transparent 1px);background-size:44px 44px"></div>
+                    <div style="position:relative;text-align:center"><div style="font-size:34px">📍</div><div style="font-weight:800;font-size:14px;margin-top:6px">WorkEZ Willow Square</div><div style="font-size:12px;color:var(--muted)">Guindy, Chennai</div></div>
+                    <div style="position:absolute;top:12px;left:12px;display:flex;gap:6px"><span style="background:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;box-shadow:var(--shadow-sm)">Map</span><span style="background:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);box-shadow:var(--shadow-sm)">Satellite</span></div>
+                    <div style="position:absolute;bottom:12px;right:12px;background:rgba(31,31,31,.75);color:#fff;font-size:10px;padding:4px 9px;border-radius:5px">Google Maps embed · lazy-loaded</div>
+                  </div>
+                  <div style="display:flex;gap:10px;padding:16px 18px;border-top:1px solid var(--line-soft);flex-wrap:wrap">
+                    <a class="btn btn-p btn-sm">🧭 Get directions</a>
+                    <a class="btn btn-o btn-sm">Open in Google Maps ↗</a>
+                    <a class="btn btn-o btn-sm">⧉ Copy address</a>
+                  </div>
+                </div>
+
+                <!-- TRAVEL TIMES -->
+                <div style="border:1px solid var(--line);border-radius:var(--r-card);margin-top:20px;overflow:hidden">
+                  <div style="background:var(--ink);color:#fff;padding:13px 20px;font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase">Getting here</div>
+                  <div style="padding:6px 20px 16px">
+                    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:14px"><span>🚇 Guindy Metro Station</span><b>600 m · 8 min walk</b></div>
+                    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:14px"><span>🚆 Guindy Suburban Railway</span><b>1.2 km · 5 min drive</b></div>
+                    <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:14px"><span>✈️ Chennai International Airport</span><b>9 km · 22 min drive</b></div>
+                    <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:14px"><span>🛣️ Anna Salai / Mount Road</span><b>2 km · 7 min drive</b></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note-row">
+      <div class="note"><b><span class="pin">2</span>Fix the load failure first.</b> “Loading map…” almost always means the API key is missing, referrer-restricted to the wrong domain, or Maps JavaScript API / Embed API isn't enabled on the billing project. Restrict the key by HTTP referrer to <code>workez.in</code> and <code>*.workez.in</code>, and never ship it in a client bundle unrestricted.</div>
+      <div class="note"><b><span class="pin">3</span>Use the Embed API, not the JS SDK.</b> A <code>&lt;iframe&gt;</code> Maps Embed with <code>loading="lazy"</code> costs nothing per load and adds ~0 to your JS bundle. The full JS SDK is billed per map load and will hurt Core Web Vitals on 20+ location pages for no benefit — you're showing one pin, not building an interactive app.</div>
+      <div class="note"><b><span class="pin">4</span>Facade pattern for CWV.</b> Render a static map image first; swap in the live iframe only on click or when it scrolls into view. This keeps LCP and TBT clean on mobile, where most location-page traffic lands.</div>
+      <div class="note"><b><span class="pin">5</span>Coordinates come from the centre record.</b> Each centre already has verified GPS in the project's schema work — reuse those exact values for the pin, the <code>LocalBusiness.geo</code> schema, and the Google Business Profile. Three different lat/longs for one building is a real local-SEO problem.</div>
+      <div class="note"><b><span class="pin">6</span>“Getting here” is the SEO payload.</b> The travel-time table is crawlable text answering “managed office near Guindy metro” type queries — the map iframe itself contributes nothing to search. Content per centre, stored as a repeatable field on the centre record.</div>
+      <div class="note"><b><span class="pin">7</span>Consent.</b> The Google embed sets cookies. If a consent banner is in scope, the map must sit behind the facade until functional cookies are accepted, with a “Show map” click-through in place of the iframe.</div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: TESTIMONIALS ══════════════ -->
+<section class="view" id="v-testimonials">
+  <div class="slab">
+    <div class="slab-hd"><h2>Client Testimonials — homepage section</h2><span class="slab-url">/ (homepage)</span><span class="slab-tag edit">New section on existing page</span></div>
+    <div class="note"><b><span class="pin">1</span>Where it goes.</b> Between the <b>“In 3 Cities. Over 20 Locations”</b> centres strip and the <b>stats band</b>. That is the point where a visitor has seen the offer and the footprint and is deciding whether to believe it. Putting testimonials after the contact form — the common mistake — means they're read by people who already converted.<br><br><b>Reuses what exists.</b> The Solutions page already has a “Trusted Reviews” block (currently placeholder: <i>“Sarah M., CEO of Jhonson”</i> with Spotify filler text). Build this as one shared component and fix both pages at once.</div>
+    <div class="slab-body">
+      <div class="wz">
+        <div style="padding:30px 0 4px"><div class="wrap"><div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)">↑ Existing: In 3 Cities. Over 20 Locations.</div></div></div>
+
+        <div class="sec soft">
+          <div class="wrap">
+            <div class="sec-head">
+              <div><div class="eyebrow">Client Testimonials</div><h2 class="sec-h">What it's actually like to work here</h2><p class="lede" style="margin-top:12px">From founders, facility heads and India leads across our centres.</p></div>
+              <div style="display:flex;gap:10px"><span style="width:42px;height:42px;border:1.5px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:16px;color:var(--muted)">←</span><span style="width:42px;height:42px;border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:16px">→</span></div>
+            </div>
+
+            <div class="sample">⚠︎ SAMPLE — replace with real, attributed, written-consent quotes. Unattributed praise reads as invented and is worth less than an empty section.</div>
+
+            <div class="grid g3">
+              <div class="card" style="padding:30px 28px;display:flex;flex-direction:column">
+                <div style="font-size:30px;line-height:1;color:var(--accent);font-weight:800;margin-bottom:14px">"</div>
+                <p style="font-size:15.5px;color:#3D3D3D;flex:1;line-height:1.7">We moved 90 people in over a single weekend and were fully operational on Monday morning. In eleven months I have raised exactly two facilities tickets, and both were closed the same day.</p>
+                <div style="display:flex;align-items:center;gap:13px;margin-top:24px;padding-top:22px;border-top:1px solid var(--line-soft)">
+                  <span class="ph" data-spec="" style="width:46px;height:46px;border-radius:50%;font-size:9px">👤</span>
+                  <div><div style="font-weight:800;font-size:14.5px">[Name]</div><div style="font-size:12.5px;color:var(--muted)">Head of Workplace, [Company]</div><div style="font-size:11.5px;color:var(--muted-2);margin-top:2px">WorkEZ Urban Square, OMR</div></div>
+                </div>
+              </div>
+              <div class="card" style="padding:30px 28px;display:flex;flex-direction:column">
+                <div style="font-size:30px;line-height:1;color:var(--accent);font-weight:800;margin-bottom:14px">"</div>
+                <p style="font-size:15.5px;color:#3D3D3D;flex:1;line-height:1.7">Our parent company's security team flew in expecting a two-day audit. Access zoning, camera retention and the visitor log were already in place, so they signed off the same afternoon.</p>
+                <div style="display:flex;align-items:center;gap:13px;margin-top:24px;padding-top:22px;border-top:1px solid var(--line-soft)">
+                  <span class="ph" data-spec="" style="width:46px;height:46px;border-radius:50%;font-size:9px">👤</span>
+                  <div><div style="font-weight:800;font-size:14.5px">[Name]</div><div style="font-size:12.5px;color:var(--muted)">India Operations Lead, [Company]</div><div style="font-size:11.5px;color:var(--muted-2);margin-top:2px">WorkEZ Willow Square, Guindy</div></div>
+                </div>
+              </div>
+              <div class="card" style="padding:30px 28px;display:flex;flex-direction:column">
+                <div style="font-size:30px;line-height:1;color:var(--accent);font-weight:800;margin-bottom:14px">"</div>
+                <p style="font-size:15.5px;color:#3D3D3D;flex:1;line-height:1.7">We went from 35 to 70 seats in one quarter without changing address, contract or anything else. For a team growing this fast, not having to think about the office is the point.</p>
+                <div style="display:flex;align-items:center;gap:13px;margin-top:24px;padding-top:22px;border-top:1px solid var(--line-soft)">
+                  <span class="ph" data-spec="" style="width:46px;height:46px;border-radius:50%;font-size:9px">👤</span>
+                  <div><div style="font-weight:800;font-size:14.5px">[Name]</div><div style="font-size:12.5px;color:var(--muted)">Co‑Founder, [Company]</div><div style="font-size:11.5px;color:var(--muted-2);margin-top:2px">WorkEZ Vivera, Coimbatore</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:38px;flex-wrap:wrap;gap:18px">
+              <div style="display:flex;gap:7px"><span style="width:26px;height:5px;border-radius:3px;background:var(--accent)"></span><span style="width:9px;height:5px;border-radius:3px;background:var(--line)"></span><span style="width:9px;height:5px;border-radius:3px;background:var(--line)"></span></div>
+              <a style="font-size:14px;font-weight:700;color:var(--accent)">Read the full case studies →</a>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:18px 0 34px"><div class="wrap"><div style="font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)">↓ Existing: 3 Cities / 20+ Centres / 100+ Clients stats band</div></div></div>
+      </div>
+    </div>
+    <div class="note-row">
+      <div class="note"><b><span class="pin">2</span>Attribution is the whole design.</b> Three lines, always: name, role + company, and <b>which centre</b>. The centre line is what separates this from stock-photo testimonial filler, and it double-serves as an internal link to that location page. If a client won't be named, use “Head of Workplace, a listed manufacturing company” — a described role beats a fake name.</div>
+      <div class="note"><b><span class="pin">3</span>Component + CMS.</b> One <code>testimonial</code> collection: quote, person name, role, company, company logo, centre reference, consent ref, <code>featuredOnHomepage</code> boolean, order. Homepage pulls the top 3 by order; Solutions and location pages filter the same collection. Build it once.</div>
+      <div class="note"><b><span class="pin">4</span>Carousel behaviour.</b> Three cards desktop, two at 1000px, one at 760px with swipe. <b>Do not autoplay.</b> Arrows and dots must be real buttons with <code>aria-label</code>, cards equal height via flex, and the whole set keyboard-reachable.</div>
+      <div class="note"><b><span class="pin">5</span>Schema — be careful here.</b> Mark up as <code>Review</code> nested in the <code>Organization</code>, with a real <code>author</code>. Do <b>not</b> add <code>aggregateRating</code> stars unless the ratings come from a genuine, collected review process — self-serve star markup is a manual-action risk and Google has been aggressive about it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ VIEW: BADGES ══════════════ -->
+<section class="view" id="v-badges">
+  <div class="slab">
+    <div class="slab-hd"><h2>Certified green building badges</h2><span class="slab-url">Contact / enquiry form block — all pages</span><span class="slab-tag edit">Asset replacement</span></div>
+    <div class="note"><b><span class="pin">1</span>What's wrong today.</b> The badges are shipped as a <b>single flattened raster image</b> sitting next to the form. That means: blurry on retina, unreadable on mobile, no alt text, nothing clickable, and a full re-export every time a certification is added or renewed. Fix is to make each badge its own asset in a responsive strip.</div>
+    <div class="slab-body">
+      <div class="wz">
+        <div class="sec tight">
+          <div class="wrap">
+            <div class="grid g2" style="gap:20px;margin-bottom:44px">
+              <div style="border:1px dashed var(--line);border-radius:var(--r-card);padding:24px;background:var(--surface)">
+                <div class="chip" style="background:#FFE9E2;color:#C43700;margin-bottom:16px">Before — one flattened image</div>
+                <div style="background:linear-gradient(135deg,#E9EDF2,#DCE2EA);border-radius:10px;height:100px;display:grid;place-items:center;color:#9AA3AE;font-size:11px;font-weight:700;letter-spacing:.6px;filter:blur(.4px)">badges-strip.png · 1 file · no alt · not responsive</div>
+              </div>
+              <div style="border:1px solid var(--ok);border-radius:var(--r-card);padding:24px;background:rgba(30,142,90,.04)">
+                <div class="chip" style="background:rgba(30,142,90,.14);color:var(--ok);margin-bottom:16px">After — individual SVGs in a flex strip</div>
+                <div style="display:flex;gap:12px;flex-wrap:wrap">
+                  <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:12px 16px;text-align:center;flex:1;min-width:92px"><div style="font-size:22px">🌿</div><div style="font-size:9.5px;font-weight:800;margin-top:5px;letter-spacing:.3px">IGBC<br>GOLD</div></div>
+                  <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:12px 16px;text-align:center;flex:1;min-width:92px"><div style="font-size:22px">🏅</div><div style="font-size:9.5px;font-weight:800;margin-top:5px;letter-spacing:.3px">LEED<br>PLATINUM</div></div>
+                  <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:12px 16px;text-align:center;flex:1;min-width:92px"><div style="font-size:22px">⭐</div><div style="font-size:9.5px;font-weight:800;margin-top:5px;letter-spacing:.3px">GRIHA<br>5 STAR</div></div>
+                  <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:12px 16px;text-align:center;flex:1;min-width:92px"><div style="font-size:22px">♻️</div><div style="font-size:9.5px;font-weight:800;margin-top:5px;letter-spacing:.3px">WELL<br>CERTIFIED</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- IN CONTEXT -->
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+              <div style="background:var(--ink);color:#fff;padding:12px 22px;font-size:11.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase">In context — enquiry form block</div>
+              <div class="grid g2" style="gap:0">
+                <div style="padding:38px 36px;background:var(--surface)">
+                  <h2 class="sec-h" style="font-size:26px">Let's get in touch.</h2>
+                  <p style="font-size:14.5px;color:var(--muted);margin-top:10px">Leave your details below and get a free trial or a tour.</p>
+                  <div style="margin-top:30px;font-size:14.5px;font-weight:600;display:flex;flex-direction:column;gap:12px"><span>☎ +91 95512 45124</span><span>✉ connect@workez.in</span><span style="color:var(--muted);font-weight:400;font-size:13.5px">No. 25, Rajiv Gandhi Salai (OMR),<br>Taramani, Chennai – 600113</span></div>
+
+                  <div style="margin-top:34px;padding-top:26px;border-top:1px solid var(--line)">
+                    <div style="font-size:11px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted-2);margin-bottom:14px">Certified green buildings</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                      <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:10px 14px;text-align:center;min-width:80px"><div style="font-size:19px">🌿</div><div style="font-size:9px;font-weight:800;margin-top:4px">IGBC GOLD</div></div>
+                      <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:10px 14px;text-align:center;min-width:80px"><div style="font-size:19px">🏅</div><div style="font-size:9px;font-weight:800;margin-top:4px">LEED</div></div>
+                      <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:10px 14px;text-align:center;min-width:80px"><div style="font-size:19px">⭐</div><div style="font-size:9px;font-weight:800;margin-top:4px">GRIHA 5★</div></div>
+                      <div style="background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:10px 14px;text-align:center;min-width:80px"><div style="font-size:19px">♻️</div><div style="font-size:9px;font-weight:800;margin-top:4px">WELL</div></div>
+                    </div>
+                    <p style="font-size:11.5px;color:var(--muted-2);margin-top:12px">Certifications apply to specific centres. <span style="color:var(--accent);font-weight:700">See which →</span></p>
+                  </div>
+                </div>
+                <div style="padding:38px 36px">
+                  <div class="grid g2" style="gap:14px"><div class="field"><label>First name</label><input class="inp" placeholder="First name"></div><div class="field"><label>Phone number</label><input class="inp" placeholder="+91"></div></div>
+                  <div class="grid g2" style="gap:14px"><div class="field"><label>Email</label><input class="inp" placeholder="Email"></div><div class="field"><label>Location</label><select class="inp"><option>Select location</option></select></div></div>
+                  <div class="field"><label>Select solution</label><div class="seg"><span class="on">Workspace</span><span>Private Cabin</span><span>Meeting Space</span></div></div>
+                  <div class="field"><label>Message</label><textarea class="inp" rows="3" placeholder="Write your message.."></textarea></div>
+                  <a class="btn btn-p" style="width:100%;justify-content:center">Send message</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note-row">
+      <div class="note"><b><span class="pin">2</span>Asset spec.</b> One <b>SVG per certification</b> (PNG at 3× only if the certifying body won't supply vector). Render at a fixed height of 56px, width auto, in a wrapping flex row. Never scale a badge lock-up non-proportionally — most certification bodies' usage terms forbid it.</div>
+      <div class="note"><b><span class="pin">3</span>Alt text, individually.</b> <code>alt="IGBC Gold certified — WorkEZ Willow Square, Chennai"</code>. A single image called <code>badges.png</code> with empty alt tells Google nothing about your sustainability credentials, which is a live differentiator in enterprise and GCC tenders.</div>
+      <div class="note"><b><span class="pin">4</span>Accuracy caveat is mandatory.</b> Green certifications attach to <i>buildings</i>, not to a company. Site-wide badges implying every centre is certified is a claim you don't want to defend in a tender. Add the “Certifications apply to specific centres” line linking to a page that lists which, and drive the strip from a per-centre field.</div>
+      <div class="note"><b><span class="pin">5</span>Confirm before build.</b> Please send the exact list of certifications and levels currently held — the four shown here are illustrative. Also confirm whether each certifying body's brand guidelines require a specific lock-up, minimum size or clear-space rule.</div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: LEAD NOTIFICATIONS ══════════════ -->
+<section class="view" id="v-notify">
+  <div class="slab">
+    <div class="slab-hd"><h2>Automatic lead notifications — Marketing &amp; Pre-sales</h2><span class="slab-tag new">New system</span><span class="slab-tag">Backend + integrations</span></div>
+    <div class="note"><b><span class="pin">1</span>The real problem to solve.</b> This is not "send an email when a form submits" — that already half-exists and gets ignored. The requirement is that <b>every lead reaches a named owner within minutes, with enough context to act, and nothing silently disappears</b>. Three things make that work: one normalised lead event regardless of which form fired it, a routing rule that separates a brochure download from a 200-seat enterprise enquiry, and a delivery channel people actually watch. Email alone fails the third test.</div>
+
+    <div style="padding:30px 32px">
+      <!-- FLOW -->
+      <h3 class="card-h" style="margin-bottom:20px">Flow</h3>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:stretch">
+        <div class="card" style="padding:20px"><div class="chip acc" style="margin-bottom:12px">1</div><div style="font-weight:800;font-size:14px;margin-bottom:7px">Capture</div><div style="font-size:12.5px;color:var(--muted);line-height:1.6">Any of 7 forms fires the same <code>lead.created</code> event with a normalised payload.</div></div>
+        <div class="card" style="padding:20px"><div class="chip acc" style="margin-bottom:12px">2</div><div style="font-weight:800;font-size:14px;margin-bottom:7px">Enrich &amp; score</div><div style="font-size:12.5px;color:var(--muted);line-height:1.6">Attach source page, centre, city, industry, UTM set, seats, device. Compute an intent tier.</div></div>
+        <div class="card" style="padding:20px"><div class="chip acc" style="margin-bottom:12px">3</div><div style="font-weight:800;font-size:14px;margin-bottom:7px">Persist</div><div style="font-size:12.5px;color:var(--muted);line-height:1.6">Write to the CRM <i>first</i>. The record is the source of truth; notifications are a view of it.</div></div>
+        <div class="card" style="padding:20px"><div class="chip acc" style="margin-bottom:12px">4</div><div style="font-weight:800;font-size:14px;margin-bottom:7px">Route</div><div style="font-size:12.5px;color:var(--muted);line-height:1.6">Apply the matrix below to pick channel, recipients and urgency.</div></div>
+        <div class="card" style="padding:20px"><div class="chip acc" style="margin-bottom:12px">5</div><div style="font-weight:800;font-size:14px;margin-bottom:7px">Notify &amp; chase</div><div style="font-size:12.5px;color:var(--muted);line-height:1.6">Deliver instantly, then escalate if unclaimed inside the SLA.</div></div>
+      </div>
+
+      <!-- ROUTING MATRIX -->
+      <h3 class="card-h" style="margin:38px 0 18px">Routing matrix</h3>
+      <div style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;font-size:13.5px">
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;background:var(--ink);color:#fff;font-size:11.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase">
+          <div style="padding:13px 18px">Lead source</div><div style="padding:13px 18px">Tier</div><div style="padding:13px 18px">Goes to</div><div style="padding:13px 18px">Channel</div><div style="padding:13px 18px">SLA</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;border-bottom:1px solid var(--line-soft)"><div style="padding:15px 18px;font-weight:700">Enterprise / Industry page form · 100+ seats</div><div style="padding:15px 18px"><span class="chip acc">Hot</span></div><div style="padding:15px 18px">Pre-sales lead + Marketing</div><div style="padding:15px 18px">Slack/Teams @here · SMS · Email</div><div style="padding:15px 18px;font-weight:800;color:var(--accent)">15 min</div></div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;border-bottom:1px solid var(--line-soft)"><div style="padding:15px 18px;font-weight:700">Location page enquiry · any seat count</div><div style="padding:15px 18px"><span class="chip acc">Hot</span></div><div style="padding:15px 18px">Pre-sales (city owner) + Marketing</div><div style="padding:15px 18px">Slack/Teams · Email</div><div style="padding:15px 18px;font-weight:800;color:var(--accent)">30 min</div></div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;border-bottom:1px solid var(--line-soft)"><div style="padding:15px 18px;font-weight:700">Book a Tour</div><div style="padding:15px 18px"><span class="chip acc">Hot</span></div><div style="padding:15px 18px">Pre-sales (city owner) + centre manager</div><div style="padding:15px 18px">Slack/Teams · SMS · Email</div><div style="padding:15px 18px;font-weight:800;color:var(--accent)">15 min</div></div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;border-bottom:1px solid var(--line-soft)"><div style="padding:15px 18px;font-weight:700">Brochure download (item 4)</div><div style="padding:15px 18px"><span class="chip cream">Warm</span></div><div style="padding:15px 18px">Pre-sales queue + Marketing</div><div style="padding:15px 18px">Slack/Teams · Email</div><div style="padding:15px 18px;font-weight:800">4 hrs</div></div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;border-bottom:1px solid var(--line-soft)"><div style="padding:15px 18px;font-weight:700">Homepage / generic contact form</div><div style="padding:15px 18px"><span class="chip cream">Warm</span></div><div style="padding:15px 18px">Marketing → triage to Pre-sales</div><div style="padding:15px 18px">Slack/Teams · Email</div><div style="padding:15px 18px;font-weight:800">4 hrs</div></div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;border-bottom:1px solid var(--line-soft)"><div style="padding:15px 18px;font-weight:700">Meeting / event space enquiry</div><div style="padding:15px 18px"><span class="chip cream">Warm</span></div><div style="padding:15px 18px">Centre manager + Pre-sales</div><div style="padding:15px 18px">Slack/Teams · Email</div><div style="padding:15px 18px;font-weight:800">2 hrs</div></div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr;border-bottom:1px solid var(--line-soft)"><div style="padding:15px 18px;font-weight:700">Press enquiry (Media Kit)</div><div style="padding:15px 18px"><span class="chip">Non-sales</span></div><div style="padding:15px 18px">Marketing / PR only</div><div style="padding:15px 18px">Email</div><div style="padding:15px 18px;font-weight:800">1 day</div></div>
+        <div style="display:grid;grid-template-columns:1.35fr .85fr 1fr 1fr .7fr"><div style="padding:15px 18px;font-weight:700">All leads — end of day</div><div style="padding:15px 18px"><span class="chip">Digest</span></div><div style="padding:15px 18px">Marketing + Pre-sales heads</div><div style="padding:15px 18px">Email digest 7:00 PM IST</div><div style="padding:15px 18px;font-weight:800">—</div></div>
+      </div>
+      <div class="note" style="border-radius:10px;margin-top:16px"><b>Tier logic.</b> <code>Hot</code> = explicit buying signal (tour, seat count entered, enterprise/industry page). <code>Warm</code> = interest without commitment (brochure, generic form). Seat threshold and page-to-tier mapping should be config, not hardcoded — Pre-sales will want to tune it within the first month.</div>
+
+      <!-- NOTIFICATION ANATOMY -->
+      <h3 class="card-h" style="margin:38px 0 18px">What a notification looks like</h3>
+      <div class="grid g2" style="gap:24px;align-items:start">
+        <div>
+          <div style="font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Slack / Teams — the primary channel</div>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+            <div style="border-left:4px solid var(--accent);padding:18px 20px">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><span class="chip acc">🔥 HOT LEAD</span><span class="chip">Chennai</span><span class="chip">Willow Square</span></div>
+              <div style="font-weight:800;font-size:16px;margin-bottom:4px">Ananya Krishnan · Meridian Kite Technologies</div>
+              <div style="font-size:13.5px;color:var(--muted);margin-bottom:14px">Enterprise Workspace · <b style="color:var(--ink)">180 seats</b> · needed by Oct 2026</div>
+              <div style="font-size:13px;line-height:1.9;border-top:1px solid var(--line-soft);padding-top:12px">
+                <div>📧 <b>ananya@meridiankite.com</b> &nbsp; ☎ <b>+91 98xxx xxxxx</b></div>
+                <div>📄 Source: <b>/industry-solutions/gcc/</b></div>
+                <div>🔗 Campaign: <b>google / cpc · gcc-chennai-exact</b></div>
+                <div>🕘 Submitted: <b>29 Jul, 11:42 AM IST</b></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap"><span class="btn btn-p btn-sm">Claim this lead</span><span class="btn btn-o btn-sm">Open in CRM</span><span class="btn btn-o btn-sm">Call now</span></div>
+            </div>
+          </div>
+          <div class="note" style="margin-top:14px;border-radius:10px"><b>“Claim” is the important button.</b> It writes an owner to the CRM record and stops the escalation timer. Without a claim action you cannot tell an answered lead from an ignored one, and the SLA is unenforceable.</div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Email — same payload, for the record</div>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+            <div style="background:var(--surface);padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <div><b>From:</b> WorkEZ Website &lt;leads@workez.in&gt;</div>
+              <div><b>To:</b> presales-chennai@workez.in · marketing@workez.in</div>
+              <div><b>Subject:</b> 🔥 180-seat enquiry — Meridian Kite · Willow Square, Chennai</div>
+            </div>
+            <div style="padding:20px;font-size:13.5px;line-height:1.8">
+              <p style="margin-bottom:12px">A new <b>hot</b> lead came in from <b>/industry-solutions/gcc/</b>.</p>
+              <div style="border:1px solid var(--line-soft);border-radius:8px;padding:14px;background:var(--surface);font-size:13px">
+                Name · Ananya Krishnan<br>Company · Meridian Kite Technologies<br>Email · ananya@meridiankite.com<br>Phone · +91 98xxx xxxxx<br>Seats · 180 · Solution · Enterprise Workspace<br>Centre · Willow Square, Guindy, Chennai<br>Timeline · October 2026<br>Source · google / cpc · gcc-chennai-exact
+              </div>
+              <p style="margin-top:14px"><b>SLA: respond within 15 minutes.</b></p>
+              <div style="margin-top:14px"><span class="btn btn-p btn-sm">Open in CRM</span></div>
+            </div>
+          </div>
+          <div class="note" style="margin-top:14px;border-radius:10px"><b>Subject line carries the qualification.</b> Seats, company and centre in the subject means Pre-sales can triage from a phone lock screen. “New website enquiry” is why the current alerts get ignored.</div>
+        </div>
+      </div>
+
+      <!-- SAFEGUARDS -->
+      <h3 class="card-h" style="margin:38px 0 18px">Non-negotiables</h3>
+      <div class="grid g3" style="gap:16px">
+        <div class="card" style="padding:22px"><div style="font-weight:800;font-size:14px;margin-bottom:8px">Never lose a lead to a failed notification</div><div style="font-size:13px;color:var(--muted);line-height:1.65">Persist to the CRM before notifying. Queue notifications with retry and dead-letter handling. If Slack is down, the lead still exists and the digest still catches it.</div></div>
+        <div class="card" style="padding:22px"><div style="font-weight:800;font-size:14px;margin-bottom:8px">Escalate on silence</div><div style="font-size:13px;color:var(--muted);line-height:1.65">Unclaimed past SLA → re-notify the channel, then the Pre-sales head at 2× SLA. A weekly “breached SLA” report goes to both team leads.</div></div>
+        <div class="card" style="padding:22px"><div style="font-weight:800;font-size:14px;margin-bottom:8px">Deduplicate</div><div style="font-size:13px;color:var(--muted);line-height:1.65">Same email or phone within 24h → thread onto the existing record and post a reply in the thread, not a new alert. Otherwise a brochure + enquiry from one person reads as two leads.</div></div>
+        <div class="card" style="padding:22px"><div style="font-weight:800;font-size:14px;margin-bottom:8px">Keep spam out of the channel</div><div style="font-size:13px;color:var(--muted);line-height:1.65">Honeypot, submit-timing check and rate limiting <b>before</b> the notification fires. A channel full of junk gets muted within a week, and then the system is worse than nothing.</div></div>
+        <div class="card" style="padding:22px"><div style="font-weight:800;font-size:14px;margin-bottom:8px">Off-hours behaviour</div><div style="font-size:13px;color:var(--muted);line-height:1.65">Define working hours. Outside them, hot leads still post to the channel but suppress SMS; the SLA clock starts at the next working hour. Agree this with Pre-sales before build.</div></div>
+        <div class="card" style="padding:22px"><div style="font-weight:800;font-size:14px;margin-bottom:8px">Don't leak PII</div><div style="font-size:13px;color:var(--muted);line-height:1.65">Notification channels must be private. No lead payload in public channels, GA4 events, or anywhere client-side. Consent timestamp and policy version stored with every record.</div></div>
+      </div>
+
+      <!-- DATA CONTRACT -->
+      <h3 class="card-h" style="margin:38px 0 18px">The one payload every form must send</h3>
+      <div style="background:var(--ink);border-radius:12px;padding:22px 26px;overflow-x:auto"><pre style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#D7DAE0;line-height:1.75;margin:0">{
+  "event":        "lead.created",
+  "leadId":       "uuid",
+  "submittedAt":  "2026-07-29T11:42:00+05:30",
+  "form":         "industry_enquiry",   // homepage | location | brochure_gate |
+                                        // industry_enquiry | book_a_tour |
+                                        // meeting_enquiry | press_enquiry
+  "person":  { "name":"", "email":"", "phone":"", "company":"" },
+  "intent":  { "solution":"enterprise", "seats":180, "timeline":"2026-10",
+               "industry":"gcc", "message":"" },
+  "context": { "pageUrl":"", "pageType":"industry", "centreSlug":"willow-square",
+               "city":"chennai", "device":"desktop", "referrer":"" },
+  "campaign":{ "utm_source":"", "utm_medium":"", "utm_campaign":"",
+               "utm_term":"", "utm_content":"", "gclid":"" },
+  "consent": { "given":true, "policyVersion":"2026-04",
+               "timestamp":"2026-07-29T11:42:00+05:30" },
+  "tier":    "hot"                      // computed server-side, never trusted from client
+}</pre></div>
+      <div class="note" style="border-radius:10px;margin-top:16px"><b>Why this matters more than the alert itself.</b> If the seven forms each post a different shape, routing becomes seven sets of if-statements and the CRM fills with unusable records. Agree this contract before anyone writes the first form handler — it is the cheapest hour in the whole Phase 2 build.</div>
+    </div>
+  </div>
+</section>
+<!-- ══════════════ VIEW: COMPARE PAGE ══════════════ -->
+<section class="view" id="v-compare">
+  <div class="slab">
+    <div class="slab-hd"><h2>Compare — area page template</h2><span class="slab-url">/compare/[city]-[area]/</span><span class="slab-tag new">New CMS collection</span><span class="slab-tag">Structure from shipturtle.com/compare/shipturtle-vs-sharetribe</span></div>
+
+    <div class="note"><b><span class="pin">1</span>How the Shipturtle reference maps across.</b> Their page is <i>one product vs one product</i>. Yours is <i>two WorkEZ centres vs four local providers in one area</i> — so the table goes from 3 columns to 7, and everything downstream has to survive that. Section-for-section: hero + intro ✓ · consultation CTA card ✓ · feature-by-feature table ✓ (rebuilt for 7 columns) · "why the winning combination" benefit cards → <b>Why Anna Salai</b> + <b>Benefits</b> · product spotlight → <b>WorkEZ Advantage</b> two-centre block · testimonials ✓ (reuses item 6) · <b>"Choose X if / Choose Y if" decision guide</b> ✓ — the single most important block on the page · FAQ accordion ✓ · final CTA ✓ · footer "Compare Shipturtle" column → <b>related compare links</b>.</div>
+
+    <div class="legend">
+      <b>Field markers</b>
+      <span><i style="background:rgba(255,70,0,.55)"></i>Orange dashed = CMS field, editable by marketing</span>
+      <span><i style="background:rgba(30,142,90,.6)"></i>Green dashed = pulled from an existing record (centre / testimonial), not typed again</span>
+      <span style="color:var(--muted)">Anything unmarked is hard-coded template furniture.</span>
+    </div>
+
+    <div class="slab-body">
+      <div class="wz">
+        <div data-wzhead></div>
+        <div class="crumb"><a>Home</a> › <a>Compare</a> › <b>Anna Salai, Chennai</b></div>
+
+        <!-- 1 · HERO -->
+        <div class="sec dark tight" style="padding:64px 0 58px">
+          <div class="wrap">
+            <div class="eyebrow" style="margin-bottom:32px">Area Comparison · Chennai</div>
+            <h1 class="big cms" data-f="{{ h1 }}" style="max-width:22ch;font-size:clamp(28px,3.4vw,44px)">Office Space for Rent in Anna Salai, Chennai: WorkEZ vs 4 Alternatives</h1>
+            <p class="lede cms" data-f="{{ intro }}" style="margin-top:26px">Looking for the right office on Anna Salai? Whether you need a fully furnished office, a coworking desk, or a ready-to-move space on Chennai's most connected stretch, this page compares WorkEZ's two Mount Road centres against the other flex-office providers in the same corridor.</p>
+            <div style="display:flex;gap:14px;margin-top:30px;flex-wrap:wrap;align-items:center">
+              <a class="btn btn-p">Compare all 6 options ↓</a>
+              <span class="chip dark cms cms-r" data-f="{{ lastVerified }}">Last verified: 29 July 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 · CONSULTATION CTA CARD (Shipturtle parallel) -->
+        <div class="sec tight" style="padding:44px 0 0">
+          <div class="wrap">
+            <div style="border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface);padding:30px 34px;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center">
+              <div>
+                <h2 class="sec-h" style="font-size:23px">Not sure which fits? Let's shortlist it in 30 minutes.</h2>
+                <div style="display:flex;gap:26px;margin-top:14px;flex-wrap:wrap;font-size:14px;color:var(--muted);font-weight:600">
+                  <span>✓ 30-minute requirement call</span><span>✓ Shortlist across the whole corridor</span><span>✓ Same-week tour slots</span>
+                </div>
+              </div>
+              <a class="btn btn-p">Book a free consultation</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 · WORKEZ ADVANTAGE (product spotlight parallel) -->
+        <div class="sec tight">
+          <div class="wrap">
+            <h2 class="sec-h" style="margin-bottom:12px">The WorkEZ advantage on Anna Salai</h2>
+            <p class="lede cms" data-f="{{ workezAdvantage }}" style="margin-bottom:36px">WorkEZ runs two centres on Mount Road — Hansa near Spencer Plaza, and Clubhouse on central Anna Salai. Both are plug-and-play, with housekeeping, CCTV, power backup and parking included. Whether you need a small office, a handful of seats, or a private cabin floor, both sit in a prime locality with easy access to public transport.</p>
+            <div class="grid g2">
+              <div class="card cms cms-in" data-f="{{ workezCentres[0] }} → centre record" style="overflow:hidden">
+                <div class="ph" data-spec="1000×560 · WebP · alt from centre record" style="height:210px">WorkEZ Hansa</div>
+                <div style="padding:26px 28px">
+                  <span class="chip acc" style="margin-bottom:12px">Largest on the corridor</span>
+                  <h3 class="card-h" style="font-size:22px">WorkEZ Hansa</h3>
+                  <p style="font-size:14px;color:var(--muted);margin-top:6px">Spencer Plaza, Thousand Lights · near metro</p>
+                  <div style="display:flex;gap:26px;margin:20px 0 18px;flex-wrap:wrap">
+                    <div><div style="font-size:21px;font-weight:800;letter-spacing:-.5px">~1,800</div><div style="font-size:12px;color:var(--muted)">seats</div></div>
+                    <div><div style="font-size:21px;font-weight:800;letter-spacing:-.5px">~100,000</div><div style="font-size:12px;color:var(--muted)">sq. ft.</div></div>
+                  </div>
+                  <p style="font-size:14px;color:#3D3D3D">Private cabins, dedicated desks and hot desks. Conference and meeting rooms, cafeteria, recreation zone, housekeeping, CCTV and power backup.</p>
+                  <div style="font-size:13.5px;font-weight:700;color:var(--accent);margin-top:18px">See WorkEZ Hansa →</div>
+                </div>
+              </div>
+              <div class="card cms cms-in" data-f="{{ workezCentres[1] }} → centre record" style="overflow:hidden">
+                <div class="ph" data-spec="1000×560 · WebP · alt from centre record" style="height:210px">WorkEZ Clubhouse</div>
+                <div style="padding:26px 28px">
+                  <span class="chip cream" style="margin-bottom:12px">Best for growing teams</span>
+                  <h3 class="card-h" style="font-size:22px">WorkEZ Clubhouse</h3>
+                  <p style="font-size:14px;color:var(--muted);margin-top:6px">Central Anna Salai</p>
+                  <div style="display:flex;gap:26px;margin:20px 0 18px;flex-wrap:wrap">
+                    <div><div style="font-size:21px;font-weight:800;letter-spacing:-.5px">~700</div><div style="font-size:12px;color:var(--muted)">seats</div></div>
+                    <div><div style="font-size:21px;font-weight:800;letter-spacing:-.5px">~35,000</div><div style="font-size:12px;color:var(--muted)">sq. ft.</div></div>
+                  </div>
+                  <p style="font-size:14px;color:#3D3D3D">Same specification as Hansa at a scale that suits startups and mid-sized teams, on the same managed-operations model.</p>
+                  <div style="font-size:13.5px;font-weight:700;color:var(--accent);margin-top:18px">See WorkEZ Clubhouse →</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 · THE COMPARISON TABLE -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <div class="sec-head" style="margin-bottom:24px"><div><h2 class="sec-h">Office spaces in Anna Salai compared</h2><p class="lede" style="margin-top:10px">Six flex-office options on the Mount Road corridor, side by side.</p></div></div>
+
+            <div class="cms cms-i" data-f="{{ providers[] }} — repeatable: 8 attributes × N providers" style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;background:#fff">
+              <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:1080px">
+                  <thead>
+                    <tr>
+                      <th style="background:var(--ink);color:#fff;text-align:left;padding:16px 16px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;position:sticky;left:0;z-index:2;min-width:150px">Feature</th>
+                      <th style="background:var(--accent);color:#fff;text-align:left;padding:16px;font-size:13px;font-weight:800;min-width:180px">WorkEZ Hansa</th>
+                      <th style="background:var(--accent);color:#fff;text-align:left;padding:16px;font-size:13px;font-weight:800;min-width:180px">WorkEZ Clubhouse</th>
+                      <th style="background:#3A3A40;color:#fff;text-align:left;padding:16px;font-size:13px;font-weight:700;min-width:170px">IndiQube Wave</th>
+                      <th style="background:#3A3A40;color:#fff;text-align:left;padding:16px;font-size:13px;font-weight:700;min-width:170px">The Executive Zone</th>
+                      <th style="background:#3A3A40;color:#fff;text-align:left;padding:16px;font-size:13px;font-weight:700;min-width:160px">The WorkVilla</th>
+                      <th style="background:#3A3A40;color:#fff;text-align:left;padding:16px;font-size:13px;font-weight:700;min-width:180px">Smartworks — Prestige Polygon</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight:700;background:var(--surface);position:sticky;left:0;border-bottom:1px solid var(--line-soft);padding:15px 16px">Location</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Spencer Plaza, Thousand Lights — near metro station</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Central Anna Salai</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">South Indian Film Chamber</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Shakti Tower-1, Thousand Lights</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Kamala Arcade, Mount Road</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Teynampet, Prestige Polygon</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700;background:var(--surface);position:sticky;left:0;border-bottom:1px solid var(--line-soft);padding:15px 16px">Space &amp; capacity</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)"><b>~100,000 sq ft · ~1,800 seats</b></td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)"><b>~35,000 sq ft · ~700 seats</b></td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Medium–large</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Medium</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">32 seats</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">50+ seats</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700;background:var(--surface);position:sticky;left:0;border-bottom:1px solid var(--line-soft);padding:15px 16px">Workspace types</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Private cabins, dedicated desks, hot desks</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Private cabins, dedicated desks, hot desks</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Private cabins, open desks</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Private cabins, dedicated desks</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Dedicated desks, private cabins</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Dedicated desks, private offices</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700;background:var(--surface);position:sticky;left:0;border-bottom:1px solid var(--line-soft);padding:15px 16px">Amenities</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Power backup, conference &amp; meeting rooms, cafeteria, recreation zone, housekeeping, CCTV</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Same as Hansa</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Access control, AV, pantry</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Executive lounge, breakout spaces</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Printer, parking, Wi-Fi</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Gaming zone, cafeteria, snooze room</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700;background:var(--surface);position:sticky;left:0;border-bottom:1px solid var(--line-soft);padding:15px 16px">Accessibility</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Near metro, bus stop, Spencer Plaza</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)">Near metro, bus stop</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Good transport links</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">CBD access</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">CBD access</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">Near Teynampet Metro</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700;background:var(--surface);position:sticky;left:0;border-bottom:1px solid var(--line-soft);padding:15px 16px">Pricing<br><span style="font-size:11px;color:var(--accent);font-weight:800">⚠ see note 3</span></td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)"><b>From ₹X,XXX / seat / month</b><br><span style="font-size:11.5px;color:var(--muted)">volume &amp; term dependent</span></td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);background:var(--accent-soft)"><b>From ₹X,XXX / seat / month</b><br><span style="font-size:11.5px;color:var(--muted)">volume &amp; term dependent</span></td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">On request</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">₹9,000 / seat / month</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">₹5,500 / month</td>
+                      <td style="padding:15px 16px;border-bottom:1px solid var(--line-soft);color:var(--muted)">₹9,999 / seat · ₹19,500 / desk</td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight:700;background:var(--surface);position:sticky;left:0;padding:15px 16px">Ideal for</td>
+                      <td style="padding:15px 16px;background:var(--accent-soft)">Large enterprises, events, corporate offices</td>
+                      <td style="padding:15px 16px;background:var(--accent-soft)">Startups, mid-sized teams</td>
+                      <td style="padding:15px 16px;color:var(--muted)">Enterprises needing security</td>
+                      <td style="padding:15px 16px;color:var(--muted)">Client-facing businesses</td>
+                      <td style="padding:15px 16px;color:var(--muted)">Small teams</td>
+                      <td style="padding:15px 16px;color:var(--muted)">Small teams</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="padding:14px 18px;background:var(--surface);border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--muted)" class="cms" data-f="{{ sourceNote }}">Competitor details as publicly listed at the time of verification. Contact each provider directly to confirm current availability and pricing. Last verified 29 July 2026.</div>
+            </div>
+
+            <div class="note" style="border-radius:10px;margin-top:18px"><b><span class="pin">2</span>The 7-column table is the hard engineering problem on this page.</b> Desktop: horizontal scroll with the <b>Feature column pinned left</b> (<code>position:sticky;left:0</code>) so row labels never scroll away, and the two WorkEZ columns tinted so the eye finds them without the page feeling rigged. Below 900px the table <b>must not</b> stay a table — it collapses into one stacked card per provider, each repeating all 7 attributes as label/value rows, with WorkEZ's two cards first. A pinch-to-zoom 7-column grid on a phone is an instant bounce, and most of this page's traffic will be mobile.</div>
+          </div>
+        </div>
+
+        <!-- 5 · DECISION GUIDE (the key Shipturtle block) -->
+        <div class="sec tight">
+          <div class="wrap">
+            <h2 class="sec-h" style="margin-bottom:10px">So which one should you pick?</h2>
+            <p class="lede" style="margin-bottom:34px">An honest read of the corridor. If another option fits you better, we would rather you knew now than after a tour.</p>
+            <div class="grid g2">
+              <div class="card cms" data-f="{{ chooseWorkezIf[] }}" style="padding:32px 30px;border-color:rgba(255,70,0,.35);background:var(--accent-soft)">
+                <h3 class="card-h" style="font-size:20px;margin-bottom:18px">Choose WorkEZ if…</h3>
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;font-size:14.5px">
+                  <li>✓ &nbsp;You need <b>more than 50 seats</b> on Anna Salai — nothing else on the corridor has this depth of inventory.</li>
+                  <li>✓ &nbsp;You expect to grow and don't want a relocation in year two.</li>
+                  <li>✓ &nbsp;You want facilities, IT, security and housekeeping on <b>one invoice with one manager</b>, not four vendors.</li>
+                  <li>✓ &nbsp;You need event or town-hall space in the same building.</li>
+                  <li>✓ &nbsp;Walking distance to the metro matters for your team's commute.</li>
+                </ul>
+              </div>
+              <div class="card cms" data-f="{{ considerOthersIf[] }}" style="padding:32px 30px">
+                <h3 class="card-h" style="font-size:20px;margin-bottom:18px">Consider the others if…</h3>
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;font-size:14.5px;color:#3D3D3D">
+                  <li>→ &nbsp;You're a <b>team of under 10</b> and want the lowest possible monthly cost — The WorkVilla starts lower.</li>
+                  <li>→ &nbsp;You want a published per-seat rate you can budget against without a call.</li>
+                  <li>→ &nbsp;Your priority is a <b>Teynampet</b> address specifically rather than Thousand Lights.</li>
+                  <li>→ &nbsp;You need a highly specific security or compliance setup we haven't discussed yet — ask us first, but we'll tell you if we're not the fit.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 · WHY ANNA SALAI -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <div class="grid g2" style="gap:48px;align-items:start">
+              <div>
+                <h2 class="sec-h cms" data-f="{{ whyAreaTitle }}" style="font-size:29px">Why Anna Salai is Chennai's premier commercial hub</h2>
+                <p class="cms" data-f="{{ whyAreaIntro }}" style="font-size:15.5px;color:var(--muted);margin:16px 0 24px">From Spencer Plaza to Teynampet Metro and Thousand Lights, Anna Salai is the heart of Chennai's business district — with easy access to transport, shopping, hotels and dining.</p>
+                <ul class="cms" data-f="{{ whyAreaPoints[] }}" style="list-style:none;display:flex;flex-direction:column;gap:13px;font-size:14.5px;color:#3D3D3D">
+                  <li>📍 Connects Egmore, Triplicane, Nungambakkam, Teynampet and Raheja Towers</li>
+                  <li>🚇 Teynampet Metro Station, bus stops and major corporate offices within reach</li>
+                  <li>🏢 A wide range of commercial buildings offering flexible, shared and serviced office space</li>
+                  <li>👥 Suits small teams, satellite offices and corporate headquarters alike</li>
+                  <li>🅿️ Car parking, conference rooms, meeting rooms and server rooms across most buildings</li>
+                </ul>
+              </div>
+              <div>
+                <div class="cms cms-in" data-f="{{ areaMap }} → coords from centre record" style="border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden">
+                  <div style="height:300px;background:linear-gradient(135deg,#E4E9EE,#D3DBE4);position:relative;display:grid;place-items:center">
+                    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.55) 1px,transparent 1px);background-size:44px 44px"></div>
+                    <div style="position:relative;text-align:center"><div style="font-size:30px">📍📍</div><div style="font-weight:800;font-size:14px;margin-top:6px">Anna Salai corridor</div><div style="font-size:12px;color:var(--muted)">All 6 options plotted · WorkEZ pins in orange</div></div>
+                  </div>
+                  <div style="padding:14px 18px;border-top:1px solid var(--line-soft);font-size:12px;color:var(--muted)">Reuses the Maps module from item 5 — same Embed API, same facade pattern.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 · TYPES + BENEFITS -->
+        <div class="sec tight">
+          <div class="wrap">
+            <h2 class="sec-h" style="margin-bottom:10px">Types of office space available in Anna Salai</h2>
+            <p class="lede" style="margin-bottom:34px">Six formats on the corridor, and who each one actually suits.</p>
+            <div class="grid g3 cms" data-f="{{ spaceTypes[] }} — {title, description}">
+              <div class="card" style="padding:24px"><h3 class="card-h" style="font-size:17px">Coworking &amp; hot desks</h3><p style="font-size:14px;color:var(--muted);margin-top:8px">Per-seat, month-to-month. Best for freelancers, satellite staff and teams under five.</p></div>
+              <div class="card" style="padding:24px"><h3 class="card-h" style="font-size:17px">Dedicated desks</h3><p style="font-size:14px;color:var(--muted);margin-top:8px">Your own fixed seat in a shared floor, with storage. For small teams that want permanence without a cabin.</p></div>
+              <div class="card" style="padding:24px"><h3 class="card-h" style="font-size:17px">Private cabins</h3><p style="font-size:14px;color:var(--muted);margin-top:8px">Lockable rooms from four seats upward. For teams needing confidentiality or focused work.</p></div>
+              <div class="card" style="padding:24px"><h3 class="card-h" style="font-size:17px">Managed floors</h3><p style="font-size:14px;color:var(--muted);margin-top:8px">A whole floor fitted to your brand and layout, operated by the provider. From roughly 50 seats.</p></div>
+              <div class="card" style="padding:24px"><h3 class="card-h" style="font-size:17px">Serviced &amp; ready-to-move offices</h3><p style="font-size:14px;color:var(--muted);margin-top:8px">Furnished and connected on day one. No fit-out, no capex, no vendor management.</p></div>
+              <div class="card" style="padding:24px"><h3 class="card-h" style="font-size:17px">Conventional lease</h3><p style="font-size:14px;color:var(--muted);margin-top:8px">Bare shell on a long lease. Lowest rent per sq ft, highest capex and longest lead time.</p></div>
+            </div>
+
+            <h2 class="sec-h" style="margin:60px 0 30px">What you get from an Anna Salai address</h2>
+            <div class="grid g3 cms" data-f="{{ benefits[] }} — {icon, title, description}" style="gap:18px">
+              <div style="display:flex;gap:14px"><span style="font-size:22px">🚇</span><div><b style="font-size:15px">Transport on every side</b><div style="font-size:13.5px;color:var(--muted)">Metro, bus routes and main arterial roads.</div></div></div>
+              <div style="display:flex;gap:14px"><span style="font-size:22px">🏦</span><div><b style="font-size:15px">A working commercial hub</b><div style="font-size:13.5px;color:var(--muted)">Banks, eateries and hotels for client meetings.</div></div></div>
+              <div style="display:flex;gap:14px"><span style="font-size:22px">📍</span><div><b style="font-size:15px">Central to everywhere</b><div style="font-size:13.5px;color:var(--muted)">Teynampet, Egmore, Triplicane and Nungambakkam nearby.</div></div></div>
+              <div style="display:flex;gap:14px"><span style="font-size:22px">🅿️</span><div><b style="font-size:15px">Parking that exists</b><div style="font-size:13.5px;color:var(--muted)">Car parking available in most buildings on the stretch.</div></div></div>
+              <div style="display:flex;gap:14px"><span style="font-size:22px">🗣️</span><div><b style="font-size:15px">Rooms for real work</b><div style="font-size:13.5px;color:var(--muted)">Conference, meeting and server rooms as standard.</div></div></div>
+              <div style="display:flex;gap:14px"><span style="font-size:22px">🔌</span><div><b style="font-size:15px">Operations that don't stop</b><div style="font-size:13.5px;color:var(--muted)">Power backup, CCTV and housekeeping built in.</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 · TESTIMONIAL (reuses item 6) -->
+        <div class="sec soft tight">
+          <div class="wrap">
+            <div class="cms cms-in" data-f="{{ testimonials }} → filtered to city = chennai" style="border-radius:var(--r-card)">
+              <div class="card" style="padding:34px 36px;max-width:780px;margin:0 auto;text-align:center">
+                <div style="font-size:30px;color:var(--accent);font-weight:800">"</div>
+                <p style="font-size:17px;color:#3D3D3D;line-height:1.7;margin:10px 0 20px">[Real, attributed quote from a client at a Chennai centre — pulled from the shared testimonial collection built in item 6. No separate content entry for this page.]</p>
+                <div style="font-weight:800;font-size:14.5px">[Name]</div><div style="font-size:12.5px;color:var(--muted)">[Role], [Company] · WorkEZ Hansa, Anna Salai</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9 · FAQ -->
+        <div class="sec tight">
+          <div class="wrap" style="max-width:900px">
+            <h2 class="sec-h" style="margin-bottom:28px">Ask us anything about Anna Salai</h2>
+            <div class="cms" data-f="{{ faqs[] }} — {question, answer} · powers FAQPage schema" style="border-top:1px solid var(--line-soft)">
+              <div style="padding:20px 0;border-bottom:1px solid var(--line-soft)"><div style="display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:16px">Which is the largest office space provider on Anna Salai?<span style="color:var(--accent)">−</span></div><p style="font-size:14.5px;color:var(--muted);margin-top:12px">WorkEZ Hansa, at roughly 100,000 sq ft and 1,800 seats, is the largest single flex-office facility on the Mount Road corridor. WorkEZ Clubhouse adds a further ~700 seats on central Anna Salai.</p></div>
+              <div style="padding:20px 0;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:16px">How much does office space cost in Anna Salai?<span style="color:var(--muted-2)">+</span></div>
+              <div style="padding:20px 0;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:16px">Is Anna Salai well connected by metro?<span style="color:var(--muted-2)">+</span></div>
+              <div style="padding:20px 0;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:16px">Can I rent a small office or just a few seats on Anna Salai?<span style="color:var(--muted-2)">+</span></div>
+              <div style="padding:20px 0;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:16px">What's the difference between coworking and a managed office here?<span style="color:var(--muted-2)">+</span></div>
+              <div style="padding:20px 0;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:16px">Which Anna Salai workspace suits a 100-person team?<span style="color:var(--muted-2)">+</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10 · FINAL CTA -->
+        <div style="background:var(--accent);color:#fff;padding:60px 0">
+          <div class="wrap" style="display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap">
+            <div><h2 class="sec-h" style="font-size:30px">Find your workspace on Anna Salai</h2><p style="opacity:.92;margin-top:10px;font-size:16px">Tell us headcount and move-in date. We'll shortlist across the corridor — including options that aren't ours.</p></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn" style="background:#fff;color:var(--accent)">Book a tour</a><a class="btn btn-lt">Download area guide</a></div>
+          </div>
+        </div>
+
+        <!-- 11 · RELATED COMPARES -->
+        <div class="sec tight">
+          <div class="wrap">
+            <h2 class="sec-h" style="font-size:24px;margin-bottom:22px">Compare other Chennai areas</h2>
+            <div class="grid g4 cms" data-f="{{ relatedCompares[] }}" style="gap:14px">
+              <a class="card" style="padding:20px"><b style="font-size:15px">Guindy</b><div style="font-size:13px;color:var(--muted);margin-top:5px">6 providers compared</div></a>
+              <a class="card" style="padding:20px"><b style="font-size:15px">OMR</b><div style="font-size:13px;color:var(--muted);margin-top:5px">9 providers compared</div></a>
+              <a class="card" style="padding:20px"><b style="font-size:15px">Velachery</b><div style="font-size:13px;color:var(--muted);margin-top:5px">5 providers compared</div></a>
+              <a class="card" style="padding:20px"><b style="font-size:15px">Perungudi</b><div style="font-size:13px;color:var(--muted);margin-top:5px">7 providers compared</div></a>
+            </div>
+          </div>
+        </div>
+
+        <div data-wzfoot></div>
+      </div>
+    </div>
+
+    <!-- MOBILE TABLE PATTERN -->
+    <div class="note"><b><span class="pin">3</span>Mobile pattern for the table — build this, don't let the table scroll.</b></div>
+    <div class="slab-body" style="background:#EDEFF3;padding:28px 24px">
+      <div style="max-width:380px;margin:0 auto">
+        <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--shadow-md);border:2px solid var(--accent)">
+          <div style="background:var(--accent);color:#fff;padding:14px 18px"><b style="font-size:16px">WorkEZ Hansa</b><div style="font-size:12px;opacity:.9">Spencer Plaza, Thousand Lights</div></div>
+          <div style="padding:6px 18px 16px;font-size:13px">
+            <div style="display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-soft)"><span style="color:var(--muted)">Capacity</span><b style="text-align:right">~1,800 seats</b></div>
+            <div style="display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-soft)"><span style="color:var(--muted)">Types</span><b style="text-align:right">Cabins, desks, hot desks</b></div>
+            <div style="display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-soft)"><span style="color:var(--muted)">Pricing</span><b style="text-align:right">From ₹X,XXX/seat</b></div>
+            <div style="display:flex;justify-content:space-between;gap:14px;padding:11px 0"><span style="color:var(--muted)">Ideal for</span><b style="text-align:right">Large enterprises</b></div>
+            <a class="btn btn-p btn-sm" style="width:100%;justify-content:center;margin-top:12px">See this centre</a>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px">One card per provider · WorkEZ cards first · all 7 attributes repeated in each</div>
+      </div>
+    </div>
+
+    <!-- CMS FIELD TABLE -->
+    <div style="padding:28px 32px">
+      <h3 class="card-h" style="margin-bottom:16px">CMS content model — <code style="font-family:ui-monospace,Menlo,monospace;font-size:14px;background:var(--accent-soft);color:#B23200;padding:2px 7px;border-radius:5px">compareArea</code></h3>
+      <div style="border:1px solid var(--line);border-radius:12px;overflow:hidden">
+        <table class="ftable">
+          <thead><tr><th style="min-width:200px">Field</th><th style="min-width:130px">Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>city</code> · <code>area</code> · <code>slug</code></td><td>string / slug</td><td>Builds <code>/compare/chennai-anna-salai/</code></td></tr>
+            <tr><td><code>h1</code></td><td>string</td><td>Page title. See note 4 — do not keyword-stack it.</td></tr>
+            <tr><td><code>intro</code></td><td>rich text</td><td>Hero lede, 2–3 sentences</td></tr>
+            <tr><td><code>lastVerified</code></td><td>date</td><td><b>Required.</b> Rendered in the hero and under the table.</td></tr>
+            <tr><td><code>workezAdvantage</code></td><td>rich text</td><td>Intro paragraph above the centre cards</td></tr>
+            <tr><td><code>workezCentres[]</code></td><td>multi-ref → <code>centre</code></td><td><b>Linked, not typed.</b> Name, photo, seats, sq ft, amenities and URL all resolve from the existing centre record — so a centre update propagates to every compare page automatically.</td></tr>
+            <tr><td><code>providers[]</code></td><td>repeatable group</td><td><code>{name, location, sizeCapacity, workspaceTypes, amenities, accessibility, pricing, idealFor, sourceUrl, verifiedOn}</code> — one entry per competitor. Table columns render from this array, so adding a 7th provider needs no code change.</td></tr>
+            <tr><td><code>chooseWorkezIf[]</code></td><td>repeatable text</td><td>Decision-guide left column</td></tr>
+            <tr><td><code>considerOthersIf[]</code></td><td>repeatable text</td><td>Decision-guide right column. Must be genuine — see note 5.</td></tr>
+            <tr><td><code>whyAreaTitle</code> · <code>whyAreaIntro</code> · <code>whyAreaPoints[]</code></td><td>string / text / repeatable</td><td>Area context block</td></tr>
+            <tr><td><code>areaMap</code></td><td>coords + zoom</td><td><b>Linked.</b> Reuses centre GPS + the Maps module from item 5</td></tr>
+            <tr><td><code>spaceTypes[]</code></td><td>repeatable <code>{title, description}</code></td><td>Six format cards</td></tr>
+            <tr><td><code>benefits[]</code></td><td>repeatable <code>{icon, title, description}</code></td><td>Icon grid</td></tr>
+            <tr><td><code>testimonials</code></td><td>auto-query</td><td><b>Linked.</b> Filters the shared <code>testimonial</code> collection (item 6) by city. No separate entry.</td></tr>
+            <tr><td><code>faqs[]</code></td><td>repeatable <code>{question, answer}</code></td><td>5–8. Powers <code>FAQPage</code> schema.</td></tr>
+            <tr><td><code>relatedCompares[]</code></td><td>multi-ref → <code>compareArea</code></td><td><b>Linked.</b> Sibling area pages</td></tr>
+            <tr><td><code>seoTitle</code> · <code>metaDescription</code></td><td>string</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note" style="border-radius:10px;margin-top:16px"><b>The point of the linked fields.</b> Three things — centre details, the map, and testimonials — are <b>never re-typed on a compare page</b>. They resolve from records that already exist. Across 10+ area pages that is the difference between a maintainable cluster and ten pages that quietly go stale.</div>
+    </div>
+
+    <div class="note-row">
+      <div class="note"><b><span class="pin">4</span>Your H1 needs trimming.</b> Supplied: <i>"Compare Top Office Space For Rent In Anna Salai, Chennai - WorkEZ VS Others"</i>. That reads as three keywords bolted together. Suggested: <b>"Office Space for Rent in Anna Salai, Chennai: WorkEZ vs 4 Alternatives"</b> — keeps the head term, adds a number (better CTR), drops the redundant "Compare Top". Same issue in the closing section: <i>"office space available for rent in Anna Salai, ready to move office space in Mount Road, or coworking office space for rent in a prime locality"</i> is three phrasings of one thing. Google's helpful-content systems specifically downgrade this.</div>
+      <div class="note"><b><span class="pin">5</span>The pricing row is the credibility problem.</b> Every competitor shows a number; WorkEZ shows "on request". On a comparison table, the vendor hiding its price reads as the expensive one — and that is the single row buyers scan hardest. Publish a <b>"from ₹X,XXX / seat / month"</b> band with a "volume and term dependent" qualifier. You keep negotiating room and stop losing the visitor at the exact moment they were comparing.</div>
+      <div class="note"><b><span class="pin">6</span>Publishing competitors' pricing carries a duty.</b> Every <code>providers[]</code> entry needs <code>sourceUrl</code> and <code>verifiedOn</code>, a visible "as publicly listed" disclaimer (built in above the fold of the table footer), and a <b>quarterly re-verification cycle</b>. Stale or wrong competitor pricing is both a reputational and a legal exposure, and it is the first thing a competitor's marketing team will screenshot.</div>
+      <div class="note"><b><span class="pin">7</span>Two of six columns being yours is fine — being dishonest is not.</b> The "Consider the others if…" block is what makes this page rank and earn links rather than read as an advert. It has to name real situations where a competitor wins. Pages that only flatter the publisher do not get cited by AI answer engines, and that is half the point of building this cluster.</div>
+      <div class="note"><b><span class="pin">8</span>Missing from your draft, added here.</b> FAQ block (your own launch checklist requires one on every compare page), a decision guide, a map, a testimonial, related-area links, and a closing CTA. Your draft ended on prose with no way to act — the visitor has just done all their comparison work and there was nothing to click.</div>
+      <div class="note"><b><span class="pin">9</span>Schema.</b> <code>BreadcrumbList</code> (Home → Compare → Anna Salai — already specced in your project docs) + <code>FAQPage</code> + <code>ItemList</code> for the provider set. <b>Do not</b> add <code>Product</code> or <code>Review</code> markup to competitor entries — you are not reviewing them, and rating a competitor in structured data invites a complaint you cannot defend.</div>
+      <div class="note"><b><span class="pin">10</span>Data correction.</b> Your sheet has <i>"South Indian Film Chambe"</i> (truncated) for IndiQube Wave, and Smartworks Prestige Polygon is in <b>Teynampet</b> — on the corridor, but arguably not Anna Salai proper. Decide whether the page scope is "Anna Salai" or "the Mount Road corridor" and make the H1 and the table agree.</div>
+    </div>
+  </div>
+</section>
+<!--VIEWS-->
+</div>
+
+<script>
+const VIEWS=[
+ ['tokens','Design Tokens'],
+ ['cs-index','1a · Case Studies Index'],
+ ['cs-detail','1b · Case Study Detail'],
+ ['industries','2 · Industry Solutions'],
+ ['mediakit','3 · Media Kit'],
+ ['brochure','4 · Brochure + Lead Gate'],
+ ['maps','5 · Google Maps Module'],
+ ['testimonials','6 · Homepage Testimonials'],
+ ['badges','7 · Green Building Badges'],
+ ['notify','8 · Lead Notifications'],
+ ['compare','9 · Compare Page (Anna Salai)']
+];
+
+/* ── mockup nav ── */
+const nav=document.getElementById('packNav');
+nav.innerHTML=VIEWS.map(([id,label],i)=>`<button data-v="${id}"${i===0?' class="on"':''}>${label}</button>`).join('');
+nav.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  nav.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  const v=document.getElementById('v-'+b.dataset.v); if(v) v.classList.add('on');
+  window.scrollTo({top:0,behavior:'instant'});
+  location.hash=b.dataset.v;
+});
+
+/* ── shared WorkEZ site header / footer ── */
+const HEAD=`<div style="border-bottom:1px solid var(--line-soft)"><div class="wz-nav">
+  <div class="wz-brand">Work<i>EZ</i></div>
+  <div class="wz-links"><span>About</span><span>Locations</span><span>Solutions</span><span>Gallery</span><span>Others</span></div>
+  <a class="btn btn-p btn-sm">Contact us now</a>
+</div></div>`;
+
+const FOOT=`<footer class="wz-foot"><div class="wrap">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:34px">
+    <div><h4>About</h4><ul><li>Meet Team WorkEZ</li><li>Why WorkEZ</li><li>Careers</li><li>FAQs</li></ul></div>
+    <div><h4>Solutions</h4><ul><li>Enterprise Workspace</li><li>Private Cabins</li><li>Meeting &amp; Event Space</li><li style="color:#FF8A5C">Industry Solutions <b style="font-size:9px;background:#FF4600;color:#fff;padding:1px 5px;border-radius:4px;vertical-align:2px">NEW</b></li><li>Gallery</li></ul></div>
+    <div><h4>Legal</h4><ul><li>Privacy &amp; Policy</li><li>Terms &amp; Conditions</li></ul></div>
+    <div><h4>Media</h4><ul><li style="color:#FF8A5C">Case Studies <b style="font-size:9px;background:#FF4600;color:#fff;padding:1px 5px;border-radius:4px;vertical-align:2px">NEW</b></li><li>Blogs</li><li>In the media</li><li style="color:#FF8A5C">Media Kit <b style="font-size:9px;background:#FF4600;color:#fff;padding:1px 5px;border-radius:4px;vertical-align:2px">NEW</b></li></ul></div>
+    <div><div class="wz-brand" style="color:#fff;margin-bottom:14px">Work<i>EZ</i></div><p class="fnote">WorkEZ provides flexible, tech-enabled workspaces designed to support teams of every size — ready when you are.</p><div style="display:flex;gap:14px;margin-top:18px;font-size:15px;color:#A9ADB4">in 𝕏 ⓕ ⓘ ▶</div></div>
+  </div>
+  <div style="border-top:1px solid rgba(255,255,255,.12);margin-top:38px;padding-top:26px">
+    <h4 style="margin-bottom:14px">Locations</h4>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;font-size:13.5px;color:#A9ADB4">
+      <div><b style="color:#fff;display:block;margin-bottom:8px">Chennai</b>Willow Square, Guindy · The Address, Pallavaram · Heliz, Velachery · Alwarpet · SM Towers, Perungudi · Urban Square, OMR · Clubhouse, Anna Salai · The Arc, OMR</div>
+      <div><b style="color:#fff;display:block;margin-bottom:8px">Coimbatore</b>Vivera, Saravanampatti</div>
+      <div><b style="color:#fff;display:block;margin-bottom:8px">Bengaluru</b>Whitefield</div>
+    </div>
+  </div>
+  <div class="fbot"><span>Copyright © 2026, WorkEZ. All rights reserved.</span><span>Phase 2 mockup — not a live page</span></div>
+</div></footer>`;
+
+document.querySelectorAll('[data-wzhead]').forEach(el=>el.innerHTML=HEAD);
+document.querySelectorAll('[data-wzfoot]').forEach(el=>el.innerHTML=FOOT);
+
+/* deep link */
+if(location.hash){
+  const id=location.hash.slice(1);
+  const btn=nav.querySelector(`[data-v="${id}"]`);
+  if(btn) btn.click();
+}
+</script>
+</body>
+</html>
